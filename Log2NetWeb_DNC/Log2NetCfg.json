@@ -1,0 +1,49 @@
+{
+  "baseCfg": {
+    "log2NetLevel": "Info",
+    "appenderType": "2",
+    "logMonitorIntervalMins": "1",
+    "dncSessionTimeoutMins": "20",
+    "bWriteInfoToDebugFile": "0"
+  },
+
+  "fileCfg": {
+    "logToFilePath": "App_Data/Log_Files"
+  },
+
+  "ConnectionStrings": {
+    "logTraceSqlStr": "Data Source =127.0.0.1;Initial Catalog = LogTraceW;uid=sa;pwd=sa123.123;",
+    "logMonitorSqlStr": "Data Source =127.0.0.1;Initial Catalog = LogMonitorW;uid=sa;pwd=sa123.123;",
+    "logTraceSqlStr2": "User Id=scott;Password=sa123123;Data Source=(DESCRIPTION=(ADDRESS=(PROTOCOL=tcp)(HOST=localhost)(PORT=1521))(CONNECT_DATA=(SERVICE_NAME=LogTraceW)))",
+    "logMonitorSqlStr2": "User Id=scott;Password=sa123123;Data Source=(DESCRIPTION=(ADDRESS=(PROTOCOL=tcp)(HOST=localhost)(PORT=1521))(CONNECT_DATA=(SERVICE_NAME=LogMonitorW)))",
+    "logTraceSqlStr3": "Data Source=localhost;port=3306;Initial Catalog=LogTraceW;user id=sa;password=sa123123;",
+    "logMonitorSqlStr3": "Data Source=localhost;port=3306;Initial Catalog=LogMonitorW;user id=sa;password=sa123123;"
+  },
+
+  "logDBCfg": {
+    "DBAccessTypeKey": "2",
+    "UserCfg_TraceDBTypeKey": "1",
+    "UserCfg_MonitorDBTypeKey": "1",
+    "UserCfg_TraceDBConKey": "logTraceSqlStr",
+    "UserCfg_MonitorDBConKey": "logMonitorSqlStr"
+  },
+
+  "oracleCfg": {
+    "initTraceDBWhenOracle": "0",
+    "initMonitorDBWhenOracle": "0",
+    "OracleDriverType": "0"
+  },
+  "MQCfg": {
+    "RabbitMQServer_Log": "localhost:5672;oawxAdmin1;admin123.123"
+  },
+
+  "InfluxDBCfg": {
+    "bWriteToInfluxDB": "0",
+    "InfluxDBServer_Log": "http://127.0.0.1:8086/;logAdmin;sa123.123"
+  },
+  "cacheCfg": {
+    "CacheStrategy": "0",
+    "MemCacheServer": "127.0.0.1:11211;127.0.0.2:11211",
+    "RedisCacheServer": "127.0.0.1:6379;127.0.0.2:6379"
+  }
+}

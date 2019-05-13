@@ -1,0 +1,93 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+
+<!--<connectionStrings>
+  <add name="SDbContext" connectionString="Server=.;Initial Catalog=Self;User ID=sa;Password=password" providerName="System.Data.SqlClient" />
+</connectionStrings>-->
+
+<log2netCfg>
+
+  <!-- 基础配置-->
+  <baseCfg>
+
+    <!--日志级别：1、Off；2、Error；3、Warn；4、Info；5、Debug （默认为5）-->
+    <add key="log2NetLevel" value="4" />
+
+    <!--日志记录方式：1、写到文件；2、直接写到数据库；3、消息队列写到数据库；-->
+    <add key="appenderType" value="2" />
+
+    <!--监控日志每隔多少分钟记录一次，若未设置默认为10分钟,若小于0则不监控-->
+    <add key="logMonitorIntervalMins" value="1"/>
+
+    <!--是否将info信息（仅供调试，不记录到日志的信息）记录到本地Debug文件：0不记录，1记录（默认为0）-->
+    <add key="bWriteInfoToDebugFile" value="1"/>
+
+  </baseCfg>
+
+  <!-- 文件方式配置-->
+  <fileCfg>
+    <!--写文件的路径（仅在日志记录方式为1时有效）-->
+    <add key = "logToFilePath" value="App_Data/Log_Files"/>
+
+  </fileCfg>
+
+  <!-- 数据库方式配置-->
+  <logDBCfg>
+    <!-- 访问数据库的方式：ADONET = 1,  EF = 2,  NH = 3 。默认为1-->
+    <add key="DBAccessTypeKey" value="1" />
+
+    <!--trace数据库的类型：SqlServer = 1,  Oracle = 2, MySql = 3,  Access = 4,   PostgreSQL = 5,  SQLite = 6。默认为1-->
+    <add key="UserCfg_TraceDBTypeKey" value="1" />
+    <!--monitor数据库的类型：SqlServer = 1,  Oracle = 2, MySql = 3,  Access = 4,   PostgreSQL = 5,  SQLite = 6。默认为1-->
+    <add key="UserCfg_MonitorDBTypeKey" value="1" />
+
+    <!--trace数据库的数据库连接字符串name值。默认为logTraceSqlStr-->
+    <add key="UserCfg_TraceDBConKey" value="logTraceSqlStr" />
+    <!--monitor数据库的数据库连接字符串name值。默认为logMonitorSqlStr-->
+    <add key="UserCfg_MonitorDBConKey" value="logMonitorSqlStr" />
+
+  </logDBCfg>
+
+  <!-- oracle数据库特殊配置-->
+  <oracleCfg>
+    <!--是否使用EF初始化数据库Trace 表：0不使用，1使用，默认为0-->
+    <add key = "initTraceDBWhenOracle" value="0"/>
+
+    <!--是否使用EF初始化数据库 monitor 表：0不使用，1使用，默认为0-->
+    <add key = "initMonitorDBWhenOracle" value="0"/>
+
+    <!--Oracle数据库驱动方式：0 oracle驱动， 1 微软驱动，默认为0-->
+    <add key = "OracleDriverType" value="0"/>
+  </oracleCfg>
+
+  <!-- 消息队列配置-->
+  <MQCfg>
+    <!--消息队列服务器(地址、用户名、密码)-->
+    <add key="RabbitMQServer_Log" value="localhost:5672;oawxAdmin1;admin123.123"/>
+  </MQCfg>
+
+  <!-- InfluxDB数据库方式配置-->
+  <InfluxDBCfg>
+
+    <!--是否需要写到InfluxDB数据库（默认为0）-->
+    <add key="bWriteToInfluxDB" value="0"/>
+
+    <!--Influxfu服务器的地址，用户名，密码-->
+    <add key="InfluxDBServer_Log" value="http://127.0.0.1:8086/;logAdmin;sa123.123"/>
+
+  </InfluxDBCfg>
+
+  <!-- 缓存配置-->
+  <cacheCfg>
+    <!--缓存策略：0、NET缓存；1、CacheManager中的NET系统缓存；2、Memcached缓存；3、Redis缓存；默认为0-->
+    <add key = "CacheStrategy" value="0"/>
+
+    <!--Memcache缓存服务器-->
+    <add key = "MemCacheServer" value="127.0.0.1:11211;127.0.0.2:11211"/>
+
+    <!--Redis缓存服务器-->
+    <add key = "RedisCacheServer" value="127.0.0.1:6379;127.0.0.2:6379"/>
+  </cacheCfg>
+  
+</log2netCfg>
+
+
