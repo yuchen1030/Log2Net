@@ -4,7 +4,7 @@ namespace Log2Net.Models
 {
     public class Log_SystemMonitorBase
     {
-        public long LogId { get; set; }
+        public long Id { get; set; }
         [IsInfluxTags]
         public string LogTime { get; set; }
         [IsInfluxTags]

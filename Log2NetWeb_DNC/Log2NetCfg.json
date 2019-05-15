@@ -20,6 +20,13 @@
     "logMonitorSqlStr3": "Data Source=localhost;port=3306;Initial Catalog=LogMonitorW;user id=sa;password=sa123123;"
   },
 
+  "userSystemNames": {
+    "SysA_01": "短信接口网站",
+    "201": "公司OA系统",
+    "901": "用户数据网站",
+    "902": "my web"
+  },
+
   "logDBCfg": {
     "DBAccessTypeKey": "2",
     "UserCfg_TraceDBTypeKey": "1",
@@ -33,6 +40,7 @@
     "initMonitorDBWhenOracle": "0",
     "OracleDriverType": "0"
   },
+
   "MQCfg": {
     "RabbitMQServer_Log": "localhost:5672;oawxAdmin1;admin123.123"
   },
@@ -41,6 +49,7 @@
     "bWriteToInfluxDB": "0",
     "InfluxDBServer_Log": "http://127.0.0.1:8086/;logAdmin;sa123.123"
   },
+
   "cacheCfg": {
     "CacheStrategy": "0",
     "MemCacheServer": "127.0.0.1:11211;127.0.0.2:11211",

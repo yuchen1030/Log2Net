@@ -241,7 +241,7 @@ namespace Log2Net.LogInfo
         [Serializable]
         public class Log_OperateTraceR
         {
-            public long LogId { get; set; }
+            public long Id { get; set; }
             public string LogTime { get { return _Time; } }
             public string UserID { get; set; }//用户工号
             public string UserName { get; set; }//用户姓名
@@ -279,7 +279,7 @@ namespace Log2Net.LogInfo
         [Serializable]
         public class Log_SystemMonitorR
         {
-            public long LogId { get; set; }
+            public long Id { get; set; }
             public string LogTime { get { return _Time; } }
             public SysCategory SystemID { get { return _SystemID; } }//业务系统编号
             public string ServerHost { get { return _server.Host; } }//服务器名称

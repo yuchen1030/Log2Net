@@ -24,6 +24,7 @@ namespace Log2Net.Config
                 var sonSections = section.ChildNodes[i].ChildNodes;
                 if (sonSections != null && sonSections.Count > 0)
                 {
+                    var secName = section.ChildNodes[i].Name;
                     foreach (XmlNode item in sonSections)
                     {
                         if (item.Attributes == null)
@@ -35,6 +36,11 @@ namespace Log2Net.Config
                             list.Add(new KVEdm()
                             {
                                 Key = item.Attributes["key"].InnerText.Trim(),
+                                Value = item.Attributes["value"].InnerText.Trim()
+                            });
+                            list.Add(new KVEdm()
+                            {
+                                Key = secName + "." + item.Attributes["key"].InnerText.Trim(),
                                 Value = item.Attributes["value"].InnerText.Trim()
                             });
                         }
@@ -61,7 +67,7 @@ namespace Log2Net.Config
     }
 
 #endif
-    public class KVEdm
+    internal class KVEdm
     {
         public string Key { get; set; }
         public string Value { get; set; }
@@ -86,5 +92,31 @@ namespace Log2Net.Config
             }
             catch { return ""; }
         }
+
+
+        internal static List<KVEdm> GetSectionVal(string sectionKey)
+        {
+            List<KVEdm> kv = new List<KVEdm>();
+            if (string.IsNullOrEmpty(sectionKey))
+            {
+                return kv;
+            }
+            try
+            {
+#if NET
+                var values = System.Configuration.ConfigurationManager.GetSection("log2netCfg") as List<KVEdm>;
+                string secFlag = sectionKey + ".";
+                var secKVs = values.Where(a => a.Key.StartsWith(secFlag, StringComparison.OrdinalIgnoreCase)).Select(a => new KVEdm() { Key = a.Key.Substring(secFlag.Length), Value = a.Value }).ToList();
+                return secKVs;
+#else
+                var dic = AppConfig.GetValue(sectionKey) as Dictionary<string, string>;
+                kv = dic.Select(a => new KVEdm() { Key = a.Key, Value = a.Value }).ToList();
+                return kv;
+#endif
+            }
+            catch { return kv; }
+        }
+
+
     }
 }

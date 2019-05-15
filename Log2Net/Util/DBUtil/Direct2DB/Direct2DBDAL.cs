@@ -29,9 +29,9 @@ namespace Log2Net.Util.DBUtil.Direct2DB
             {
                 DBType = DBType.LogTrace,
                 TableName = "Log_OperateTrace",
-                PrimaryKey = "LogId",
-                SkipCols = new string[] { "LogId" },
-                Orderby = "LogId",
+                PrimaryKey = "Id",
+                SkipCols = new string[] { "Id" },
+                Orderby = "Id",
             };
         }
 
@@ -59,9 +59,9 @@ namespace Log2Net.Util.DBUtil.Direct2DB
             {
                 DBType = DBType.LogMonitor,
                 TableName = "Log_SystemMonitor",
-                PrimaryKey = "LogId",
-                SkipCols = new string[] { "LogId" },
-                Orderby = "LogId",
+                PrimaryKey = "Id",
+                SkipCols = new string[] { "Id" },
+                Orderby = "Id",
             };
         }
 

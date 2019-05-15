@@ -6,11 +6,18 @@
 
 <log2netCfg>
 
+  <!--用户业务系统名称定义-->
+  <userSystemNames>
+    <add key="SysA_01" value="短信接口网站" />
+    <add key="201" value="公司OA系统" />
+    <add key="901" value="用户数据网站" />
+  </userSystemNames>
+
   <!-- 基础配置-->
   <baseCfg>
 
-    <!--日志级别：1、Off；2、Error；3、Warn；4、Info；5、Debug （默认为5）-->
-    <add key="log2NetLevel" value="4" />
+    <!--日志级别：1、Off；2、Error；3、Warn； 4、Business ；5、DBRec； 6、Info；7、Debug （默认为7）-->
+    <add key="log2NetLevel" value="7" />
 
     <!--日志记录方式：1、写到文件；2、直接写到数据库；3、消息队列写到数据库；-->
     <add key="appenderType" value="2" />
@@ -87,7 +94,7 @@
     <!--Redis缓存服务器-->
     <add key = "RedisCacheServer" value="127.0.0.1:6379;127.0.0.2:6379"/>
   </cacheCfg>
-  
+
 </log2netCfg>
 
 

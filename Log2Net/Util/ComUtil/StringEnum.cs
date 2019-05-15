@@ -1,5 +1,6 @@
 ﻿using System;
-
+using System.Collections.Generic;
+using System.Linq;
 
 namespace Log2Net.Util
 {
@@ -54,6 +55,35 @@ namespace Log2Net.Util
             var enumVal = Enum.Parse(enumType, enumString);
             return enumVal;
         }
+
+        //获取某个枚举的键值对
+        public static Dictionary<string, int> GetDicFromEnumType(object enumType)
+        {
+            Dictionary<string, int> dic = new Dictionary<string, int>();
+            try
+            {
+                var arrayEnum = Enum.GetValues(enumType.GetType());
+                foreach (var myCode in arrayEnum)
+                {
+                    try
+                    {
+                        string strVaule = myCode.ToString();//获取名称   //   string strName = Enum.GetName(typeof(UserGroups), myCode);//获取名称
+                        dic.Add(strVaule, (int)myCode);
+                    }
+                    catch
+                    {
+
+                    }
+                }
+                dic = dic.OrderBy(a => a.Value).ToDictionary(k => k.Key, v => v.Value);
+            }
+            catch
+            {
+
+            }
+            return dic;
+        }
+
 
         static string HandEnumString(Type enumType, string enumString)
         {

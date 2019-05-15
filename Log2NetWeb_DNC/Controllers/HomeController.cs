@@ -1,13 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
-using Log2NetWeb.Models;
-using Microsoft.AspNetCore.HttpOverrides;
+﻿using Log2Net;
 using Log2Net.Models;
-using Log2Net;
+using Log2NetWeb.Models;
+using Microsoft.AspNetCore.Mvc;
+using System.Diagnostics;
 
 namespace Log2NetWeb.Controllers
 {
@@ -25,7 +20,7 @@ namespace Log2NetWeb.Controllers
         public IActionResult About()
         {
             ViewData["Message"] = "Your application description page.";
-
+            var tttt = LogApi.GetLogWebApplicationsName();
             return View();
         }
 
@@ -34,7 +29,7 @@ namespace Log2NetWeb.Controllers
             ViewData["Message"] = "Your contact page.";
 
             Log_OperateTraceBllEdm logModel = new Log_OperateTraceBllEdm() { Detail = "进入了关于页面" };
-            LogApi.WriteLog( LogLevel.Info,  logModel);
+            LogApi.WriteLog(LogLevel.Info, logModel);
             return View();
         }
 

@@ -51,8 +51,10 @@ namespace Log2Net.Models
         Off = 1,
         Error = 2,
         Warn = 3,
-        Info = 4,
-        Debug = 5
+        Business = 4,
+        DBRec = 5,
+        Info = 6,
+        Debug = 7
     }
 
 

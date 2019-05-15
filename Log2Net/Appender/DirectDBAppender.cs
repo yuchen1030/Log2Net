@@ -22,7 +22,7 @@ namespace Log2Net.Appender
             {
                 DBType = DBType.LogTrace,
                 Model = model,
-                SkipCols = new string[] { "LogId" },
+                SkipCols = new string[] { "Id" },
                 TableName = "Log_OperateTrace",
             };
             try
@@ -55,7 +55,7 @@ namespace Log2Net.Appender
             {
                 DBType = DBType.LogMonitor,
                 Model = dbModel,
-                SkipCols = new string[] { "LogId" },
+                SkipCols = new string[] { "Id" },
                 TableName = "Log_SystemMonitor",
             };
             try

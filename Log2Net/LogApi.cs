@@ -1,24 +1,24 @@
 ﻿using Log2Net.Appender;
+using Log2Net.Config;
 using Log2Net.LogInfo;
+using static Log2Net.LogInfo.LogCom;
 using Log2Net.Models;
 using Log2Net.Util;
-using System;
-using System.Collections.Generic;
-using System.Threading;
-using static Log2Net.LogInfo.LogCom;
-using static Log2Net.LogInfo.VisitOnline;
 using Log2Net.Util.DBUtil.Models;
 using Log2Net.Util.DBUtil;
 using Log2Net.Util.DBUtil.EF2DB;
-using Log2Net.Config;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading;
+
 
 #if NET
 
 using System.Diagnostics;
-using System.Linq;
 using System.Reflection;
 using System.Web;
-
+using static Log2Net.LogInfo.VisitOnline;
 #else
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Builder;
@@ -51,8 +51,8 @@ namespace Log2Net
 
     /****日志组件基础配置******/
 
-    //<!--日志级别：1、Off；2、Error；3、Warn；4、Info；5、Debug （默认为5）-->
-    //<add key = "log2NetLevel" value="5" />
+    //    <!--日志级别：1、Off；2、Error；3、Warn； 4、Business ；5、DBRec； 6、Info；7、Debug （默认为7）-->
+    //<add key = "log2NetLevel" value="7" />
 
     //<!--日志记录方式：1、写到文件；2、直接写到数据库；3、消息队列写到数据库；默认为1-->
     //<add key = "appenderType" value="1"/>
@@ -138,7 +138,7 @@ namespace Log2Net
     //<!--系统监控日志的数据库-->
     //<add name = "logMonitorSqlStr" connectionString="Data Source =127.0.0.1;Initial Catalog = LogMonitorW;uid=sa;pwd=123456"/>
     /****数据库配置******/
-    
+
 
     /********************************************************使用方法介绍结束***************************************************/
     #endregion 日志组件使用说明
@@ -167,14 +167,13 @@ namespace Log2Net
         /// <param name="bWriteStartLog">是否是启动日志</param>
         /// <param name="bLogMonitor">是否写定时监控日志</param>
         public static void RegisterLogInitMsg(SysCategory sys, object applicationObj, bool bWriteStartLog = true, bool bLogMonitor = true)
-        {      
+        {
             var logLevelStr = Log2NetConfig.GetConfigVal("log2NetLevel");
             try
             {
                 logLevelCfg = StringEnum.GetEnumValue<LogLevel>(logLevelStr);
             }
             catch { }
-
             if (logLevelCfg == LogLevel.Off)
             {
                 return;
@@ -480,7 +479,24 @@ namespace Log2Net
             WriteLog(stop);
         }
 
+        /// <summary>
+        /// 获取用户自定义的系统名称
+        /// </summary>
+        public static Dictionary<SysCategory, string> GetLogWebApplicationsName()
+        {
+            List<KVEdm> kVEdms = Log2NetConfig.GetSectionVal("userSystemNames");
+            if (kVEdms.Count > 0)
+            {
+                Dictionary<SysCategory, string> dic = kVEdms.ToDictionary(k => StringEnum.GetEnumValue<SysCategory>(k.Key), v => v.Value);
+                return dic;
+            }
+            else
+            {
+                var enumDic = StringEnum.GetDicFromEnumType(new SysCategory());
+                return enumDic.ToDictionary(k => (SysCategory)k.Value, v => v.Key);
+            }
 
+        }
 
 #if NET
 
@@ -500,7 +516,6 @@ namespace Log2Net
         {
             VisitOnline.VisitCountFactory.GetInstance().GetSetApplicationValue(AppKey.OnLineUserCnt, VisitOnline.VOAction.Sub1);
         }
-
 
 
         /// <summary>
@@ -533,7 +548,6 @@ namespace Log2Net
 
 
         }
-
 
 
         /// <summary>

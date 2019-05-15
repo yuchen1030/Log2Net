@@ -9,6 +9,21 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Log2NetWeb_DNC", "Log2NetWe
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Log2NetWeb_net45", "Log2NetWeb_net45\Log2NetWeb_net45.csproj", "{06600000-9B49-4660-9832-B5852F8C6207}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Resource", "Resource", "{0FFA1B33-2D23-479C-8FA3-53024C97DC60}"
+	ProjectSection(SolutionItems) = preProject
+		Resource\ReadMe.md = Resource\ReadMe.md
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Doc", "Doc", "{B3C85D04-FB42-4D07-BF05-5DA8F7477BB9}"
+	ProjectSection(SolutionItems) = preProject
+		Resource\Doc\TargetFrameworks.txt = Resource\Doc\TargetFrameworks.txt
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Icon", "Icon", "{5F691368-3019-45CB-821D-5BB4F17A48A9}"
+	ProjectSection(SolutionItems) = preProject
+		Resource\Icon\Log2Net64.ico = Resource\Icon\Log2Net64.ico
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -30,6 +45,10 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{B3C85D04-FB42-4D07-BF05-5DA8F7477BB9} = {0FFA1B33-2D23-479C-8FA3-53024C97DC60}
+		{5F691368-3019-45CB-821D-5BB4F17A48A9} = {0FFA1B33-2D23-479C-8FA3-53024C97DC60}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {DB34597F-69CB-45BD-902B-108097ECDCBF}

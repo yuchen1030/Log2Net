@@ -43,7 +43,7 @@ namespace Log2Net.Util
             return "";
 #else
             key = GetRealKey(key);
-            if( string.IsNullOrEmpty(key))
+            if (string.IsNullOrEmpty(key))
             {
                 return "";
             }
@@ -84,7 +84,7 @@ namespace Log2Net.Util
             return minsNum;
         }
         //key值是子节点的话，子节点前以:分开,例如 Logging:LogLevel:Default
-        static object GetValue(string key)
+        public static object GetValue(string key)
         {
             if (string.IsNullOrEmpty(key))
             {
@@ -94,6 +94,7 @@ namespace Log2Net.Util
             var temp = key.Split(new char[] { ':', '.', ' ' }, System.StringSplitOptions.RemoveEmptyEntries);
             key = string.Join(":", temp);
             object res = Configuration[key];
+
             if (res == null)
             {
                 //  Configuration. GetSection("AllowCallers").Get<string[]>() ；Configuration["AllowCallers:0"];
@@ -150,8 +151,21 @@ namespace Log2Net.Util
                 res = Configuration.GetSection(key).Value;
                 if (res == null)
                 {
-                    res = Configuration.GetSection(key);//.Get<T>();
+                    res = Configuration.GetSection(key);//.Get<T>();     
+                    if (res != null)  //key为section
+                    {
+                        var secKVs = keysDic.Where(a => a.Value.StartsWith(key + ":", StringComparison.OrdinalIgnoreCase)).ToList();
+                        Dictionary<string, string> dic = new Dictionary<string, string>();
+                        foreach (var item in secKVs)
+                        {
+                            var ttttt = Configuration[item.Value];
+                            try { dic.Add(item.Key, Configuration[item.Value] as string); } catch { }
+                        }
+                        return dic;
+                    }
                 }
+
+
             }
             res = res ?? "";
             return res;

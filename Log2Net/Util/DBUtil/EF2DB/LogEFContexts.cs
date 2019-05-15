@@ -31,7 +31,7 @@ namespace Log2Net.Util.DBUtil.EF2DB
 
 
 #if NET
-       
+
 
     internal class Log_OperateTraceInitializer : CreateDatabaseIfNotExists<Log_OperateTraceContext>
     {
@@ -73,8 +73,8 @@ namespace Log2Net.Util.DBUtil.EF2DB
             public Log_OperateTraceMap()
             {
                 ToTable("Log_OperateTrace");
-                HasKey(m => m.LogId);
-                Property(m => m.LogTime).HasMaxLength(30);
+                HasKey(m => m.Id);
+                Property(m => m.LogTime).IsRequired();//.HasColumnType("datetime"); 
                 Property(m => m.UserID).HasMaxLength(10);
                 Property(m => m.UserName).HasMaxLength(20);
                 Property(m => m.ServerIP).HasMaxLength(20).IsRequired();
@@ -125,8 +125,8 @@ namespace Log2Net.Util.DBUtil.EF2DB
             public Log_SystemMonitorMap()
             {
                 ToTable("Log_SystemMonitor");
-                HasKey(m => m.LogId);
-                Property(m => m.LogTime).HasMaxLength(30).IsRequired();
+                HasKey(m => m.Id);
+                Property(m => m.LogTime).IsRequired();//.HasColumnType("datetime"); 
                 Property(m => m.ServerIP).HasMaxLength(20).IsRequired();
                 Property(m => m.ServerHost).HasMaxLength(40).IsRequired();
                 Property(m => m.Remark).HasMaxLength(2000);
@@ -205,8 +205,8 @@ namespace Log2Net.Util.DBUtil.EF2DB
             public void Configure(EntityTypeBuilder<Log_OperateTrace> builder)
             {
                 builder.ToTable("Log_OperateTrace");
-                builder.HasKey(m => m.LogId);
-                builder.Property(m => m.LogTime).HasMaxLength(30);
+                builder.HasKey(m => m.Id);
+                builder.Property(m => m.LogTime).IsRequired();//.HasColumnType("datetime"); 
                 builder.Property(m => m.UserID).HasMaxLength(10);
                 builder.Property(m => m.UserName).HasMaxLength(20);
                 builder.Property(m => m.ServerIP).HasMaxLength(20).IsRequired();
@@ -284,8 +284,8 @@ namespace Log2Net.Util.DBUtil.EF2DB
             public void Configure(EntityTypeBuilder<Log_SystemMonitor> builder)
             {
                 builder.ToTable("Log_SystemMonitor");
-                builder.HasKey(m => m.LogId);
-                builder.Property(m => m.LogTime).HasMaxLength(30).IsRequired();
+                builder.HasKey(m => m.Id);
+                builder.Property(m => m.LogTime).IsRequired();//.HasColumnType("datetime"); 
                 builder.Property(m => m.ServerIP).HasMaxLength(20).IsRequired();
                 builder.Property(m => m.ServerHost).HasMaxLength(40).IsRequired();
                 builder.Property(m => m.Remark).HasMaxLength(2000);

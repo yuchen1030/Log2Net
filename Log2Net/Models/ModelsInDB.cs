@@ -11,9 +11,9 @@ namespace Log2Net.Models
     [Serializable]
     public class Log_OperateTrace
     {
-        public long LogId { get; set; }
+        public long Id { get; set; }
         [IsInfluxTags]
-        public string LogTime { get; set; }
+        public DateTime LogTime { get; set; }
         public string UserID { get; set; }//用户工号
         public string UserName { get; set; }//用户姓名
         [IsInfluxTags]
@@ -38,9 +38,9 @@ namespace Log2Net.Models
     [Serializable]
     public class Log_SystemMonitor //: Log_SystemMonitorBase  //使用Log_SystemMonitorBase基类将导致EF创建DB时基类字段在后面，使用FluentApi的HasColumnOrder时将需要设置所有字段
     {
-        public long LogId { get; set; }
+        public long Id { get; set; }
         [IsInfluxTags]
-        public string LogTime { get; set; }
+        public DateTime LogTime { get; set; }
         [IsInfluxTags]
         public SysCategory SystemID { get; set; }//业务系统编号
         [IsInfluxTags]

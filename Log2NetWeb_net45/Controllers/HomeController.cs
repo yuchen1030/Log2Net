@@ -1,6 +1,7 @@
 ﻿using Log2Net;
 using Log2Net.LogInfo;
 using Log2Net.Models;
+using System.Collections.Generic;
 using System.Web.Mvc;
 
 namespace Log2NetWeb_net45.Controllers
@@ -19,6 +20,7 @@ namespace Log2NetWeb_net45.Controllers
             //IVisitCount.SetVisitNumWhenInit();
             //int OnlineCnt = IVisitCount.GetOnlineNum(); //System.Web.HttpContext.Current.Session.Contents.Count;
 
+            Dictionary<SysCategory, string> dic = LogApi.GetLogWebApplicationsName();
             ViewBag.Message = "Your application description page.";
 
             Log_OperateTraceBllEdm model = new Log_OperateTraceBllEdm()
@@ -32,8 +34,9 @@ namespace Log2NetWeb_net45.Controllers
             };
             //AdoNetAppender appender = new AdoNetAppender();
             //appender.WriteLogAndHandFail(model);
-            LogApi.WriteLog( LogLevel .Info, model);
-            
+            LogApi.WriteLog(LogLevel.Info, model);
+
+
             return View();
         }
 
