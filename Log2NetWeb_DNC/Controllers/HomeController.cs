@@ -20,7 +20,7 @@ namespace Log2NetWeb.Controllers
         public IActionResult About()
         {
             ViewData["Message"] = "Your application description page.";
-            var tttt = LogApi.GetLogWebApplicationsName();
+            var dic = LogApi.GetLogWebApplicationsName();
             return View();
         }
 

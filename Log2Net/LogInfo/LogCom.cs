@@ -243,9 +243,9 @@ namespace Log2Net.LogInfo
         {
             public long Id { get; set; }
             public string LogTime { get { return _Time; } }
-            public string UserID { get; set; }//用户工号
-            public string UserName { get; set; }//用户姓名
-            public LogType LogType { get; set; } //日志类型
+            public string UserID { get { return _UserID; } set { _UserID = value; } }//用户工号
+            public string UserName { get { return _UserName; } set { _UserName = value; } }//用户姓名
+            public LogType LogType { get { return _LogType; } set { _LogType = value; } } //日志类型
             public SysCategory SystemID { get { return _SystemID; } }//业务系统编号
             public string ServerHost { get { return _server.Host; } }//服务器名称
             public string ServerIP { get { return _server.IP; } }//服务器IP地址
@@ -270,6 +270,10 @@ namespace Log2Net.LogInfo
             ClientServerInfo.ClientInfo.IPHost _client;
             string _Time;
             SysCategory _SystemID;
+      
+            string _UserID = "系统";
+            string _UserName = "系统";
+            LogType _LogType = LogType.业务记录;
         }
 
 

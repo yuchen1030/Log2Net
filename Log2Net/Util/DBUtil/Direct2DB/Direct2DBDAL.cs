@@ -20,7 +20,7 @@ namespace Log2Net.Util.DBUtil.Direct2DB
                 var dbGeneral = ComDBFun.GetDBGeneralInfo(DBType.LogTrace);
                 return dbGeneral.DataBaseType;
             }
-           // set { typeStr = value; }
+            // set { typeStr = value; }
         }
 
         public override void SetCurretnDalParas()
@@ -48,7 +48,7 @@ namespace Log2Net.Util.DBUtil.Direct2DB
                 var dbGeneral = ComDBFun.GetDBGeneralInfo(DBType.LogMonitor);
                 return dbGeneral.DataBaseType;
             }
-           // set { typeStr = value; }
+            // set { typeStr = value; }
         }
 
 
@@ -79,7 +79,7 @@ namespace Log2Net.Util.DBUtil.Direct2DB
             skipCols = CurDalParas.SkipCols;
             updateKeys = CurDalParas.UpdateKeys;
             deleteKeys = CurDalParas.DeleteKeys;
-            orderby = CurDalParas.Orderby;     
+            orderby = CurDalParas.Orderby;
             conStr = ComDBFun.GetConnectionString(CurDalParas.DBType);
             GetBaseDBByDBType();
         }
@@ -106,7 +106,7 @@ namespace Log2Net.Util.DBUtil.Direct2DB
             public List<string> UpdateKeys { get; set; }
             public List<string> DeleteKeys { get; set; }
             public string Orderby { get; set; }//排序时使用
-   
+
 
             public IDirect2DBBase<T> Direct2DBBase { get; set; }
 
@@ -125,7 +125,7 @@ namespace Log2Net.Util.DBUtil.Direct2DB
                         baseDB = new SqlServerHelper<T>(conStr);
                         break;
 
-                    case DataBaseType.Oracle:                  
+                    case DataBaseType.Oracle:
                         // baseDB = new OracleHelperFactory<T>(conStr).GetInstance();
                         baseDB = OracleHelperFactory<T>.GetInstance(conStr);
                         break;
@@ -151,7 +151,7 @@ namespace Log2Net.Util.DBUtil.Direct2DB
 
         public abstract void SetCurretnDalParas();//抽象类，要求子类必须实现
 
-        public abstract DataBaseType CurDatabaseType { get;  }
+        public abstract DataBaseType CurDatabaseType { get; }
 
 
 
@@ -166,9 +166,7 @@ namespace Log2Net.Util.DBUtil.Direct2DB
         //添加数据
         internal override ExeResEdm Add(AddDBPara<T> dBPara)
         {
-            
-          return  baseDB.Add(tableName, dBPara.Model, skipCols);
-          
+            return baseDB.Add(tableName, dBPara.Model, skipCols);
         }
 
 

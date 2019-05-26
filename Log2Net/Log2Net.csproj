@@ -10,11 +10,12 @@
   <PropertyGroup>
     <TargetFrameworks>net45;net451;net452;net46;net461;net462;net47;net471;net472;netcoreapp2.0;netcoreapp2.1</TargetFrameworks>
 
-    <Authors>Log2Net group</Authors>
-    <Description>
-      Log2NET is a tool for collecting log to databases or files for .NET and .NETCore.
-      This component automatically collects the system's running logs (server operation, online statistics, etc.), exception logs. programmers can also add custom logs.
-      This component supports.NET platform and.NETCore platform, supports file, sql server, oracle, mysql, and can be easily extended to other databases.
+    <Authors>Log2Net WorkGroup</Authors>
+    <Tags>log, logfiles, logging, tracing</Tags>
+    <ProjectUrl>https://github.com/yuchen1030/Log2Net</ProjectUrl>
+    <Description>Log2NET is a tool for collecting log to databases or files for .NET and .NETCore.
+    This component automatically collects the system's running logs (server operation, online statistics, etc.), exception logs. programmers can also add custom logs.
+    This component supports.NET platform and.NETCore platform, supports file, sql server, oracle, mysql, and can be easily extended to other databases.
     </Description>
     <Version>1.0.0</Version>
   </PropertyGroup>

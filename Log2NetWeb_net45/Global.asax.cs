@@ -26,6 +26,31 @@ namespace Log2NetWeb_net45
         }
 
 
+        protected void Application_Error(object sender, EventArgs e)
+        {
+            try
+            {
+                Log2Net.LogApi.HandAndWriteException();
+            }
+            catch
+            {
+                System.Web.HttpContext.Current.Server.ClearError();
+            }
+
+        }
+
+        protected void Application_End(object sender, EventArgs e)
+        {
+            try
+            {
+                Log2Net.LogApi.WriteServerStopLog();//写停止日志
+            }
+            catch
+            {
+
+            }
+
+        }
 
 
         List<string> hcSessions = new List<string>();  //健康检查导致的seesion。这种session在人数统计时要忽略。
