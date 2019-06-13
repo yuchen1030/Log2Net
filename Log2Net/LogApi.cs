@@ -60,6 +60,9 @@ namespace Log2Net
     //<!--监控日志每隔多少分钟记录一次，默认为10分钟,若小于0则不监控-->
     //<add key = "logMonitorIntervalMins" value="10"/>
 
+    //<!--是否将info信息（仅供调试，不记录到日志的信息）记录到本地Debug文件：0不记录，1记录（默认为0）-->
+    //<add key = "bWriteInfoToDebugFile" value="0"/>
+
     //<!--netCore中session过期时间配置，单位为分钟，默认值为20-->
     //<add key = "dncSessionTimeoutMins" value="20"/>
 
@@ -69,9 +72,6 @@ namespace Log2Net
     /****写日志到文件的配置******/
     //<!--写文件的路径（仅在日志记录方式为1时有效）-->
     //<add key = "logToFilePath" value="App_Data/Log_Files"/>
-
-    //<!--是否将info信息（仅供调试，不记录到日志的信息）记录到本地Debug文件：0不记录，1记录（默认为0）-->
-    //<add key = "bWriteInfoToDebugFile" value="0"/>
 
     /****写日志到文件的配置******/
 

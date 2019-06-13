@@ -1,16 +1,4 @@
 {
-  "baseCfg": {
-    "log2NetLevel": "Info",
-    "appenderType": "2",
-    "logMonitorIntervalMins": "1",
-    "dncSessionTimeoutMins": "20",
-    "bWriteInfoToDebugFile": "0"
-  },
-
-  "fileCfg": {
-    "logToFilePath": "App_Data/Log_Files"
-  },
-
   "ConnectionStrings": {
     "logTraceSqlStr": "Data Source =127.0.0.1;Initial Catalog = LogTraceW;uid=sa;pwd=sa123.123;",
     "logMonitorSqlStr": "Data Source =127.0.0.1;Initial Catalog = LogMonitorW;uid=sa;pwd=sa123.123;",
@@ -26,6 +14,19 @@
     "901": "用户数据网站",
     "902": "my web"
   },
+
+  "baseCfg": {
+    "log2NetLevel": "Info",
+    "appenderType": "2",
+    "logMonitorIntervalMins": "1",
+    "dncSessionTimeoutMins": "20",
+    "bWriteInfoToDebugFile": "0"
+  },
+
+  "fileCfg": {
+    "logToFilePath": "App_Data/Log_Files"
+  },
+
 
   "logDBCfg": {
     "DBAccessTypeKey": "2",
