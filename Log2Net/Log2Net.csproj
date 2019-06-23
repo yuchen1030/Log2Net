@@ -76,8 +76,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Util\DBUtil\Direct2DB\Oracle\" />
-    <Folder Include="Util\DBUtil\EF2DB\" />
+    <Folder Include="Util\DBUtil\Dal\EFDal\" />
   </ItemGroup>
 
 

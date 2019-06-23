@@ -8,27 +8,24 @@ using System.Data.Common;
 using System.Linq;
 using System.Text;
 
-namespace Log2Net.Util.DBUtil.Direct2DB
+namespace Log2Net.Util.DBUtil.AdoNet
 {
     /// <summary>
     /// sql server 数据库访问类
     /// </summary>
     /// <typeparam name="T"></typeparam>
-    internal class MySqlHelper<T> : Direct2DBBase<T>, IDirect2DBBase<T> where T : class
+    internal class MySqlHelper<T> : AdoNetBase<T>, IAdoNetBase<T> where T : class
     {
         readonly DBBaseAttr dbBaseAttr = new DBBaseAttr() { DataBaseType = DataBaseType.MySql, LeftPre = "", ParaPreChar = "?", RightSuf = "" };
 
         protected override DBBaseAttr DBBaseAttr { get { return dbBaseAttr; } }
 
-        public MySqlHelper(string strConnStr) : base(strConnStr)
+        internal MySqlHelper(string strConnStr) : base(strConnStr)
         {
             connstr = strConnStr;
         }
 
-
-
-
-        public override ExeResEdm SqlCMD_DT(string cmdText, Func<DbDataAdapter, int> fun, params DbParameter[] parameters)
+        protected override ExeResEdm SqlCMD_DT(string cmdText, Func<DbDataAdapter, int> fun, params DbParameter[] parameters)
         {
             DataTable dt = new DataTable();
             DataSet ds = new DataSet();
@@ -60,8 +57,6 @@ namespace Log2Net.Util.DBUtil.Direct2DB
             return dBResEdm;
         }
 
-
-
         ExeResEdm ExecuteDataSet(string cmdText, params DbParameter[] parameters)
         {
             DataSet ds = new DataSet();
@@ -92,13 +87,11 @@ namespace Log2Net.Util.DBUtil.Direct2DB
             //return ds;
         }
 
-
-
         //select SQL_CALC_FOUND_ROWS * from log_systemmonitor where OnlineCnt >1 order by time DESC limit 0,5;
         //SELECT FOUND_ROWS();
         //SELECT SQL_CALC_FOUND_ROWS @rowno:=@rowno+1 as rowno,r.* from log_systemmonitor r,(select @rowno:= 0) t where OnlineCnt >1 order by time DESC;
         //SELECT FOUND_ROWS();
-        public override ExeResEdm GetDataByPage(string tableName, string strWhere, string orderby, int pageIndex, int pageSize, out int totalCnt)
+        protected override ExeResEdm GetDataByPage(string tableName, string strWhere, string orderby, int pageIndex, int pageSize, out int totalCnt)
         {
             totalCnt = 0;
             StringBuilder strSql = new StringBuilder();
@@ -149,9 +142,6 @@ namespace Log2Net.Util.DBUtil.Direct2DB
             }
         }
 
-
-
-
         protected override ExeResEdm SqlCMD(string sql, Func<DbCommand, object> fun, params DbParameter[] pms)
         {
             ExeResEdm dBResEdm = new ExeResEdm();
@@ -183,101 +173,19 @@ namespace Log2Net.Util.DBUtil.Direct2DB
             }
         }
 
-
-
-        public override bool UpdateDtToDB(DataTable dtInfos, string strComFields = "*")
-        {
-            bool bolFb = false;
-            string strTableName = dtInfos.TableName;
-            try
-            {
-                using (MySqlConnection conn = new MySqlConnection(connstr))
-                {
-                    conn.Open();
-                    MySqlCommand cmd = conn.CreateCommand();
-                    cmd.CommandText = GetColumnsNameSql(strTableName, strComFields);
-                    MySqlDataAdapter adapter = new MySqlDataAdapter(cmd);
-                    adapter.UpdateCommand = new MySqlCommandBuilder(adapter).GetUpdateCommand();
-                    adapter.Update(dtInfos.GetChanges());
-                    dtInfos.AcceptChanges();
-                }
-                bolFb = true;
-            }
-            catch (Exception e)
-            {
-                bolFb = false;
-                throw new Exception("Err-DataHelper-UpdateDtToDB:" + e.Message);
-            }
-
-            return bolFb;
-        }
-
-        public override bool UpdateDsToDB(DataSet dsTables, Dictionary<string, string> dicDtFields = null)
-        {
-            bool bolFb = false;
-
-            try
-            {
-                using (MySqlConnection conn = new MySqlConnection(connstr))
-                {
-                    conn.Open();
-                    MySqlTransaction tsOprate = conn.BeginTransaction();
-                    try
-                    {
-                        MySqlCommand cmd = conn.CreateCommand();
-
-                        foreach (DataTable dtTemp in dsTables.Tables)
-                        {
-                            string strComFields = "*";
-                            if (dicDtFields != null && dicDtFields.Count > 0 && dicDtFields.ContainsKey(dtTemp.TableName))
-                            {
-                                strComFields = dicDtFields[dtTemp.TableName];
-                            }
-                            cmd.CommandText = GetColumnsNameSql(dtTemp.TableName, strComFields);
-                            cmd.Transaction = tsOprate;
-                            MySqlDataAdapter adapter = new MySqlDataAdapter(cmd);
-                            adapter.UpdateCommand = new MySqlCommandBuilder(adapter).GetUpdateCommand();
-
-                            adapter.Update(dtTemp.GetChanges());
-                            dtTemp.AcceptChanges();
-                        }
-                        dsTables.AcceptChanges();
-
-                        tsOprate.Commit();
-                    }
-                    catch (Exception e)
-                    {
-                        tsOprate.Rollback();
-                        throw e;
-                    }
-
-                }
-                bolFb = true;
-            }
-            catch (Exception e)
-            {
-                bolFb = false;
-                throw new Exception("Err-DataHelper-UpdateDtToDB:" + e.Message);
-            }
-
-            return bolFb;
-        }
-
-
-        public override string GetColumnsNameSql(string strTbName, string strField = "*")
+        protected override string GetColumnsNameSql(string strTbName, string strField = "*")
         {
             string strSqlTxt = "select top 0 " + strField + " from " + strTbName;
             return strSqlTxt;
         }
 
-
-        public override DbParameter GetOneDbParameter(string name, object value)
+        protected override DbParameter GetOneDbParameter(string name, object value)
         {
             MySqlParameter cur = new MySqlParameter(name, value);
             return cur;
         }
 
-        public override DbParameter[] ParameterPrepare(DbParameter[] parameters)
+        protected override DbParameter[] ParameterPrepare(DbParameter[] parameters)
         {
             var paras = parameters.Select(a => new MySqlParameter(a.ParameterName, a.Value)).ToArray();
             return paras;

@@ -1,6 +1,7 @@
 ﻿using Log2Net.Config;
 using Log2Net.Models;
-using Log2Net.Util.DBUtil.Direct2DB;
+using Log2Net.Util.DBUtil.AdoNet;
+using Log2Net.Util.DBUtil.Dal;
 using Log2Net.Util.DBUtil.EF2DB;
 using Log2Net.Util.DBUtil.Models;
 using System;
@@ -12,8 +13,8 @@ namespace Log2Net.Util.DBUtil
     internal abstract class DBAccessFac<T> where T : class
     {
         static readonly object locker = new object();
-        static DBAccess<T> dBAccess = null;
-        public DBAccess<T> DBAccessFactory()
+        static DBAccessDal<T> dBAccess = null;
+        public DBAccessDal<T> DBAccessFactory()
         {
             if (dBAccess == null)
             {
@@ -38,7 +39,7 @@ namespace Log2Net.Util.DBUtil
 
         }
 
-        public abstract DBAccess<T> GetDalByDBAccessType(DBAccessType dbAccessType);
+        public abstract DBAccessDal<T> GetDalByDBAccessType(DBAccessType dbAccessType);
 
 
 
@@ -49,7 +50,7 @@ namespace Log2Net.Util.DBUtil
     internal class Log_OperateTraceDBAccessFac : DBAccessFac<Log_OperateTrace>
     {
 
-        public override DBAccess<Log_OperateTrace> GetDalByDBAccessType(DBAccessType dbAccessType)
+        public override DBAccessDal<Log_OperateTrace> GetDalByDBAccessType(DBAccessType dbAccessType)
         {
             if (dbAccessType == DBAccessType.EF)
             {
@@ -62,7 +63,7 @@ namespace Log2Net.Util.DBUtil
             }
             else
             {
-                return new Log_OperateTraceDirectDAL();
+                return new Log_OperateTraceAdoDal();
             }
 
         }
@@ -73,7 +74,7 @@ namespace Log2Net.Util.DBUtil
     {
 
 
-        public override DBAccess<Log_SystemMonitor> GetDalByDBAccessType(DBAccessType dbAccessType)
+        public override DBAccessDal<Log_SystemMonitor> GetDalByDBAccessType(DBAccessType dbAccessType)
         {
             if (dbAccessType == DBAccessType.EF)
             {
@@ -86,7 +87,7 @@ namespace Log2Net.Util.DBUtil
             }
             else
             {
-                return new Log_SystemMonitorDirectDAL();
+                return new Log_SystemMonitorAdoDal();
             }
 
 
@@ -95,14 +96,7 @@ namespace Log2Net.Util.DBUtil
 
 
 
-    internal abstract class DBAccess<T> where T : class
-    {
 
-        internal abstract ExeResEdm /* IQueryable<T>*/ GetAll(PageSerach<T> para);
-
-        internal abstract ExeResEdm Add(AddDBPara<T> dBPara);
-
-    }
 
 
 

@@ -13,21 +13,6 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Log2Net.Util.DBUtil.EF2DB
 {
-    internal class Log_OperateTraceEFDal : EFBaseDal<Log_OperateTrace>
-    {
-        public Log_OperateTraceEFDal(Log_OperateTraceContext context) : base(context)
-        {
-
-        }
-    }
-
-    internal class Log_SystemMonitorEFDal : EFBaseDal<Log_SystemMonitor>
-    {
-        public Log_SystemMonitorEFDal(Log_SystemMonitorContext context) : base(context)
-        {
-
-        }
-    }
 
 
 #if NET

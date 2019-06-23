@@ -1,15 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Data;
-using System.Data.Common;
-using Log2Net.Util.DBUtil.Models;
+﻿using Log2Net.Config;
 using Log2Net.Models;
-using Log2Net.Config;
 
-namespace Log2Net.Util.DBUtil.Direct2DB.Oracle
+namespace Log2Net.Util.DBUtil.AdoNet.Oracle
 {
 
     //oracle 11g 以前的版本的用户名和密码是不区分大小写的。oracle 11g 用户名和密码默认区分大小写。
@@ -49,34 +41,22 @@ namespace Log2Net.Util.DBUtil.Direct2DB.Oracle
     }
 
 
-    internal abstract class OracleHelperBase<T> : Direct2DBBase<T>, IDirect2DBBase<T> where T : class
+    internal abstract class OracleHelperBase<T> : AdoNetBase<T>, IAdoNetBase<T> where T : class
     {
 
         readonly DBBaseAttr dbBaseAttr = new DBBaseAttr() { DataBaseType = DataBaseType.SqlServer, LeftPre = "", ParaPreChar = ":", RightSuf = "" };
 
         protected override DBBaseAttr DBBaseAttr { get { return dbBaseAttr; } }
 
-        public OracleHelperBase(string strConnStr) : base(strConnStr)
+        internal OracleHelperBase(string strConnStr) : base(strConnStr)
         {
             connstr = strConnStr;
         }
 
-        public override string GetColumnsNameSql(string strTbName, string strField = "*")
+        protected override string GetColumnsNameSql(string strTbName, string strField = "*")
         {
             string strSqlTxt = "select  " + strField + " from " + strTbName + " where rownum = 0";
             return strSqlTxt;
-        }
-
-
-
-
-        public class OraSqlContianer
-        {
-            public string strSqlTxt = "";
-
-            public List<DbParameter> ltOraParams = new List<DbParameter>();
-
-            public int intExpectNums = 1;//若为负数，则表示可取正或可为0，为Int16.MinValue表示不检测数量
         }
 
 
