@@ -1,5 +1,4 @@
 ﻿using Log2Net.Appender;
-using Log2Net.Config;
 using Log2Net.Models;
 using Log2Net.Util;
 using Log2Net.Util.DBUtil.Models;
@@ -9,14 +8,13 @@ using System.Data.SqlTypes;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Threading;
 
 namespace Log2Net.LogInfo
 {
     internal class LogCom
     {
-        static int logBackupWarnNum = 100;   //日志备份数量上限，到达则提醒
-        static int logReadThreadSleepNum = 10;// 10秒
+
+
         static ICache dataCache = CacheFac.CacheFactory();
         static BaseAppender appender = AppenderFac.AppenderFactory();
 
@@ -55,7 +53,7 @@ namespace Log2Net.LogInfo
             }
             catch (Exception ex)
             {
-                LogApi.WriteInfoToFile(new { 内容 = "GetServerRunningTime 出错：" + ex.Message });
+                WriteInfoToFile(new { 内容 = "GetServerRunningTime 出错：" + ex.Message });
                 return TimeSpan.FromMilliseconds(0);
             }
 
@@ -73,6 +71,20 @@ namespace Log2Net.LogInfo
         {
             return WriteModelToFile(model, mqType.ToString(), FileType.File);
         }
+
+        /// <summary>
+        /// 将日记写到本地文件中，记录一些重要但又不必写入log日志媒介的信息
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="model"></param>
+        /// <param name="mqType"></param>
+        /// <returns></returns>
+        //将日志保存到文件中
+        internal static ExeResEdm WriteInfoToFile<T>(T model)
+        {
+            return WriteModelToFile(model, "Info", FileType.Info);
+        }
+
 
         //将数据记录到文件中，
         //若是本地调试文件和日志，则文件名为日期，每行数据加时间；
@@ -123,6 +135,23 @@ namespace Log2Net.LogInfo
             }
         }
 
+        //将信息写入到文件中，主要记录调试信息但又不想记录到日志中的信息（可通过WebConfig的bWriteInfoToDebugFile 配置项开启关闭之）
+        internal static void WriteModelToFileForDebug<T>(T model)
+        {
+            if (!AppConfig.GetFinalConfig("bWriteInfoToDebugFile", false, LogApi.IsWriteInfoToDebugFile()))
+            {
+                return;
+            }
+            var typeName = typeof(T).Name;
+            if (typeName == "<>f__AnonymousType1`1")
+            {
+                typeName = "AnonymousType";
+            }
+            typeName = "DebugLog";
+            WriteModelToFile(model, typeName, FileType.Debug);
+        }
+
+
         //将异常信息写入到文件中
         public static void WriteExceptToFile(Exception ex, string module = "系统")
         {
@@ -151,88 +180,6 @@ namespace Log2Net.LogInfo
 
         }
 
-        //开启线程，将备份日志写到Appender中
-        public static void StartThreadToWriteFileToAppender()
-        {
-            Thread thread = new Thread(() =>
-            //     thread = new Thread(new ThreadStart(() =>
-            {
-                Thread.Sleep(1000 * 60);
-                while (true)
-                {
-                    try
-                    {
-                        ReadBackupLogInFileToAppender();
-                    }
-                    catch //(Exception ex)
-                    {
-                        //throw ex;//不能让日志系统的异常导致整个系统的崩溃
-                    }
-                    finally
-                    {
-                        Thread.Sleep(logReadThreadSleepNum * 1000); //10秒
-                    }
-
-                }
-            });
-            thread.IsBackground = true;
-            thread.Priority = ThreadPriority.AboveNormal;
-            thread.Start();
-            Log_OperateTraceBllEdm logModel = new Log_OperateTraceBllEdm() { Detail = "读备份日志服务启动，服务执行周期为" + logReadThreadSleepNum + "秒" };
-            LogApi.WriteLog(LogLevel.Info, logModel);
-        }
-
-        //将文件中的日志备份数据写入到Appender中
-        static void ReadBackupLogInFileToAppender()
-        {
-            string path = GetWholeFolderPath(FileType.Backup);
-            if (!Directory.Exists(path))
-            {
-                return;
-            }
-            string[] allFiles = Directory.GetFiles(path, "*.log");
-            List<int> errIndex = new List<int>();
-            for (int i = 0; i < allFiles.Length; i++)
-            {
-                if (errIndex.Count >= 2 && errIndex[0] == 0 && errIndex[1] == 1)//连续两个失败，则退出
-                {
-                    logReadThreadSleepNum *= 2;//循环时间延长
-                    if (allFiles.Length > logBackupWarnNum)
-                    {
-                        logReadThreadSleepNum *= 10;//循环时间延长         
-                        throw new Exception("系统中备份的日志数据已达到【" + allFiles.Length + "】条，请确认日志收集系统的队列服务工作正常。");
-                    }
-                    break;
-                }
-                var item = allFiles[i];
-                var curText = System.IO.File.ReadAllText(item);
-                object model = null;
-                var bOK = false;
-
-                if (item.Contains("_" + MQType.MonitorLog.ToString() + ".log"))
-                {
-                    model = SerializerHelper.DeserializeToObject<Log_SystemMonitorMQ>(curText);   //不能是Log_SystemMonitorR
-                    bOK = appender.WriteLogAgain(model);
-                }
-                else if (item.Contains("_" + MQType.TraceLog.ToString() + ".log") || item.Contains("_" + MQType.TraceLogEx.ToString() + ".log"))
-                {
-                    model = SerializerHelper.DeserializeToObject<Log_OperateTrace>(curText);  //不能是Log_OperateTraceR
-                    bOK = appender.WriteLogAgain(model);
-                }
-
-                if (bOK)
-                {
-                    System.IO.File.Delete(item);
-                    Thread.Sleep(500);
-                }
-                else
-                {
-                    errIndex.Add(i);
-                    Thread.Sleep(5000);
-                }
-
-            }
-        }
 
 
         /// <summary>
@@ -270,7 +217,7 @@ namespace Log2Net.LogInfo
             ClientServerInfo.ClientInfo.IPHost _client;
             string _Time;
             SysCategory _SystemID;
-      
+
             string _UserID = "系统";
             string _UserName = "系统";
             LogType _LogType = LogType.业务记录;
@@ -371,12 +318,12 @@ namespace Log2Net.LogInfo
 
 
         //根据文件类型得到文件夹名称，只有文件类型为 File 时采用配置文件，其他情况下程序内部设定
-        static string GetWholeFolderPath(FileType fileType)
+        internal static string GetWholeFolderPath(FileType fileType)
         {
             string resValue = "App_Data/Log_" + fileType.ToString();
             if (fileType == FileType.File)
-            {                
-                string configValue1 = Log2NetConfig.GetConfigVal("logToFilePath");
+            {
+                string configValue1 = AppConfig.GetFinalConfig("logToFilePath", "", LogApi.GetLogToFilePath());
                 resValue = string.IsNullOrEmpty(configValue1) ? resValue : configValue1;
             }
             if (string.IsNullOrEmpty(Path.GetPathRoot(resValue)))

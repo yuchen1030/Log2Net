@@ -2,11 +2,11 @@
 
 namespace Log2Net.Util.DBUtil.Dal
 {
-    internal abstract class DBAccessDal<T> where T : class
+    internal interface IDBAccessDal<T> where T : class
     {
-        internal abstract ExeResEdm GetAll(PageSerach<T> para);
+        ExeResEdm GetAll(PageSerach<T> para);
 
-        internal abstract ExeResEdm Add(AddDBPara<T> dBPara);
+        ExeResEdm Add(AddDBPara<T> dBPara);
 
     }
 }

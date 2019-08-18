@@ -104,22 +104,13 @@ namespace Log2Net.Util.DBUtil.Models
         public Exception ExBody { get; set; } //异常Exception
         public object ExeModel { get; set; }  //执行结果
         public int ExeNum { get; set; } //影响的行数
-   
+
 
     }
 
 
 
-    /// <summary>
-    /// 访问数据库的方式
-    /// </summary>
-    enum DBAccessType
-    {
-        NoSelect = 0,
-        ADONET = 1,
-        EF = 2,
-        NH = 3,//TBD
-    }
+
 
 
 

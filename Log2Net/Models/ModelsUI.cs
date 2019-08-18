@@ -10,20 +10,21 @@ namespace Log2Net.Models
     /// 业务系统中的操作轨迹实体
     /// </summary>
     [Serializable]
-    public class Log_OperateTraceBllEdm
+    public class LogTraceEdm
     {
-        public string UserID { get { return _UserID; } set { _UserID = value; } }//用户工号
-        public string UserName { get { return _UserName; } set { _UserName = value; } }//用户姓名
+        public string UserId { get { return _UserId; } set { _UserId = value; } }
+        public string UserName { get { return _UserName; } set { _UserName = value; } }
         public LogType LogType { get { return _LogType; } set { _LogType = value; } } //日志类型
         public string TabOrModu { get { return _TabOrModu; } set { _TabOrModu = value; } }//表名或模块名称
         public string Detail { get; set; } //日志内容
         public string Remark { get; set; } //其他信息
 
-        string _TabOrModu = "启动";
-        string _UserID = "系统";
+        string _UserId = "系统";
         string _UserName = "系统";
+        string _TabOrModu = "启动";
         LogType _LogType = LogType.业务记录;
     }
+
 
     /// <summary>
     /// 各业务系统中使用的监控信息实体
@@ -58,6 +59,129 @@ namespace Log2Net.Models
     }
 
 
+    public enum OracleDriverType
+    {
+        Oracle = 0,
+        MS = 1
+    }
+
+    //用户的配置
+    public class UserCfg
+    {
+
+        //   public LogLevel LogLevel { get { return userCfg.LogLevel; } }
+
+        /// <summary>
+        /// 日志级别：1、Off；2、Error；3、Warn； 4、Business ；5、DBRec； 6、Info；7、Debug （默认为7）
+        /// </summary>
+        public LogLevel LogLevel { get; set; }
+
+        /// <summary>
+        /// 日志记录方式：1、写到文件；2、直接写到数据库；3、通过队列写到数据库；4、消息队列写到数据库；
+        /// </summary>
+        public LogAppendType LogAppendType { get; set; }
+
+        /// <summary>
+        /// 监控日志每隔多少分钟记录一次，若未设置默认为10分钟,若小于0则不监控
+        /// </summary>
+        public int LogMonitorIntervalMins { get; set; }
+
+        /// <summary>
+        /// 是否将info信息（仅供调试，不记录到日志的信息）记录到本地Debug文件：0不记录，1记录（默认为0）
+        /// </summary>
+        public bool IsWriteInfoToDebugFile { get; set; }
+
+        /// <summary>
+        /// 写文件的路径（仅在日志记录方式为1时有效）
+        /// </summary>
+        public string LogToFilePath { get; set; }
+
+        /// <summary>
+        /// 访问数据库的方式：ADONET = 1,  EF = 2,  NH = 3 。默认为1
+        /// </summary>
+        public DBAccessType DBAccessType { get; set; }
+
+        /// <summary>
+        /// trace数据库的类型：SqlServer = 1,  Oracle = 2, MySql = 3,  Access = 4,   PostgreSQL = 5,  SQLite = 6。默认为1
+        /// </summary>
+        public DataBaseType TraceDataBaseType { get; set; }
+
+        /// <summary>
+        /// monitor数据库的类型：SqlServer = 1,  Oracle = 2, MySql = 3,  Access = 4,   PostgreSQL = 5,  SQLite = 6。默认为1
+        /// </summary>
+        public DataBaseType MonitorDataBaseType { get; set; }
+
+        /// <summary>
+        /// trace数据库的数据库连接字符串name值。默认为logTraceSqlStr
+        /// </summary>
+        public string TraceDBConKey { get; set; }
+
+        /// <summary>
+        /// monitor数据库的数据库连接字符串name值。默认为logMonitorSqlStr
+        /// </summary>
+        public string MonitorDBConKey { get; set; }
+
+        /// <summary>
+        /// 是否使用代码中的数据库连接字符，默认为false
+        /// </summary>
+        public bool IsConnectStrInCode { get; set; }
+
+        /// <summary>
+        /// 是否使用EF初始化数据库Trace 表：0不使用，1使用，默认为0
+        /// </summary>
+        public bool IsInitTraceDBWhenOracle { get; set; }
+
+        /// <summary>
+        /// 是否使用EF初始化数据库 monitor 表：0不使用，1使用，默认为0
+        /// </summary>
+        public bool IsInitMonitorDBWhenOracle { get; set; }
+
+        /// <summary>
+        /// Oracle数据库驱动方式：0 oracle驱动， 1 微软驱动，默认为0
+        /// </summary>
+        public OracleDriverType OracleDriverType { get; set; }
+
+        /// <summary>
+        /// 消息队列服务器(地址、用户名、密码)
+        /// </summary>
+        public string RabbitMQServer { get; set; }
+
+        /// <summary>
+        /// 是否需要写到InfluxDB数据库（默认为0）
+        /// </summary>
+        public bool IsWriteToInfluxDB { get; set; }
+
+        /// <summary>
+        /// Influxfu服务器的地址，用户名，密码
+        /// </summary>
+        public string InfluxDBServer { get; set; }
+
+
+        /// <summary>
+        /// 缓存策略：0、NET缓存；1、CacheManager中的NET系统缓存；2、Memcached缓存；3、Redis缓存；默认为0
+        /// </summary>
+        public CacheType CacheType { get; set; }
+
+        /// <summary>
+        /// Memcache缓存服务器
+        /// </summary>
+        public string MemCacheServer { get; set; }
+
+        /// <summary>
+        /// Redis缓存服务器
+        /// </summary>
+        public string RedisCacheServer { get; set; }
+
+        /// <summary>
+        /// Trace DB的数据库连接字符串
+        /// </summary>
+        public string TraceDBConStr { get; set; }
+
+        /// <summary>
+        /// Monitor DB的数据库连接字符串
+        /// </summary>
+        public string MonitorDBDBConStr { get; set; }
+    }
 
     #region 系统类别枚举:SysCategory
     /// <summary>
@@ -5229,39 +5353,74 @@ namespace Log2Net.Models
     public enum LogType
     {
         所有 = -1,
-        //用户行为/数据库操作
-        登录 = 0,
-        添加 = 1,
-        硬删除 = 2,
-        软删除 = 3,
-        清空 = 4,
-        修改 = 5,
-        事务 = 6,
-        查询 = 9,
+        //用户行为/数据库操作  10000
+        登录 = 11100,
+        添加 = 11200,
+        硬删除 = 11300,
+        软删除 = 11400,
+        清空 = 11500,
+        修改 = 11600,
+        批量插入 = 11700,
+        批量修改 = 11800,
+        批量删除 = 11900,
+        批量增删改 = 12000,
+        事务 = 12100,
+        存储过程 = 12200,
+        ExecuteNonQuery = 12300,
+        ExecuteScalar = 12400,
+        查询 = 12500,
+        Exist = 12600,
 
-        //业务操作
-        业务变更 = 11,
-        业务记录 = 12,
-        审核 = 13,
-        反审核 = 14,
-        导入 = 15,
-        批量插入 = 16,
-        提交 = 17,
-        审批 = 18,
-        驳回 = 19,
+        //业务操作  20000
+        业务变更 = 21100,
+        业务记录 = 21200,
+        审核 = 21300,
+        反审核 = 21400,
+        导入 = 21500,
+        提交 = 21600,
+        审批 = 21700,
+        驳回 = 21800,
 
-        //调试和异常
-        Debug = 21,
-        异常 = 22,
+        //调试和异常  30000
+        Debug = 31100,
+        异常 = 31200,
 
-        启动 = 31,
-        停止 = 32,
-        初次访问 = 33,
-
-
-
+        //网站行为 40000
+        启动 = 41100,
+        停止 = 41200,
+        初次访问 = 41300,
 
     }
 
+    /// <summary>
+    /// 日志记录方式：1、写到文件；2、直接写到数据库；3、通过队列写到数据库；4、消息队列写到数据库；
+    /// </summary>
+    public enum LogAppendType
+    {
+        File = 1, //写到文件
+        DB = 2,//直接写到数据库
+        Queue2DB = 3,//通过队列写到数据库
+        MQ2DB = 4,//通过消息队列写到数据库
+    }
+
+    /// <summary>
+    ///  缓存策略  0:微软Http缓存；  1：NET系统缓存（CacheManager中）；2：Memcached缓存；3：Redis缓存
+    /// </summary>
+    public enum CacheType
+    {
+        MSHttp = 0,
+        CMHttp = 1,
+        Memcached = 2,
+        Redis = 3
+    }
+
+    //使用哪里的配置，默认值为4
+    enum CfgMode
+    {
+        File = 1,//使用文件中的配置
+        Code = 2,//使用代码中的配置
+        MixF = 3,//混合使用，冲突时使用文件中的配置
+        MixC = 4,//混合使用，冲突时使用代码中的配置
+    }
 
 }

@@ -1,4 +1,5 @@
-﻿using Log2Net.Models;
+﻿using Log2Net;
+using Log2Net.Models;
 using Log2Net.Util;
 using System;
 using System.Collections;
@@ -21,16 +22,57 @@ namespace Log2NetWeb_net45
             BundleConfig.RegisterBundles(BundleTable.Bundles);
 
             //第一步：注册日志系统
-            Log2Net.LogApi.RegisterLogInitMsg(SysCategory.SysB_01, Application);//日志系统注册
+            LogApi.RegisterLogInitMsg(SysCategory.SysB_01, Application, GetUserConfigItemByCode(), GetLogWebApplicationsNameByCode());//日志系统注册
 
         }
+
+        #region 用户对日志系统的代码配置  
+        Dictionary<SysCategory, string> GetLogWebApplicationsNameByCode()
+        {
+            Dictionary<SysCategory, string> kvInCode = new Dictionary<SysCategory, string>()
+            {
+                {   SysCategory.SysA_01,"淘宝网" }
+            };
+            return kvInCode;
+        }
+
+        UserCfg GetUserConfigItemByCode()
+        {
+            UserCfg cfg = new UserCfg()
+            {
+                LogLevel = LogLevel.Info,
+                LogAppendType = LogAppendType.DB,
+                LogMonitorIntervalMins = 10,
+                IsWriteInfoToDebugFile = false,
+                LogToFilePath = "App_Data/Log_Files",
+                DBAccessType = DBAccessType.ADONET,
+                TraceDataBaseType = DataBaseType.SqlServer,
+                MonitorDataBaseType = DataBaseType.SqlServer,
+                TraceDBConKey = "logTraceSqlStr",
+                MonitorDBConKey = "logMonitorSqlStr",
+                IsConnectStrInCode = false,
+                IsInitTraceDBWhenOracle = false,
+                IsInitMonitorDBWhenOracle = false,
+                OracleDriverType = OracleDriverType.Oracle,
+                RabbitMQServer = "localhost:5672;oawxAdmin1;admin123.123",
+                IsWriteToInfluxDB = false,
+                InfluxDBServer = "http://127.0.0.1:8086/;logAdmin;sa123.123",
+                CacheType = CacheType.MSHttp,
+                MemCacheServer = "127.0.0.1:11211;127.0.0.2:11211",
+                RedisCacheServer = "127.0.0.1:6379;127.0.0.2:6379",
+                TraceDBConStr = "data source=.;initial catalog=LogTraceW;user id=sa;password=sa123.123;multipleactiveresultsets=True;application name=EntityFramework",
+                MonitorDBDBConStr = "data source=.;initial catalog=LogMonitorW;user id=sa;password=sa123.123;MultipleActiveResultSets=True;application name=EntityFramework",
+            };
+            return cfg;
+        }
+        #endregion 用户对日志系统的代码配置
 
 
         protected void Application_Error(object sender, EventArgs e)
         {
             try
             {
-                Log2Net.LogApi.HandAndWriteException();
+                LogApi.HandAndWriteException();
             }
             catch
             {
@@ -43,7 +85,7 @@ namespace Log2NetWeb_net45
         {
             try
             {
-                Log2Net.LogApi.WriteServerStopLog();//写停止日志
+                LogApi.WriteServerStopLog();//写停止日志
             }
             catch
             {
@@ -66,7 +108,7 @@ namespace Log2NetWeb_net45
             Application.Lock();//锁定后，只有这个Session能够会话        
             try
             {
-                Log2Net.LogApi.IncreaseOnlineVisitNum();
+                LogApi.IncreaseOnlineVisitNum();
             }
             catch (Exception ex)
             {
@@ -88,14 +130,14 @@ namespace Log2NetWeb_net45
                 return;
             }
             Application.Lock();
-            Log2Net.LogApi.ReduceOnlineNum();
+            LogApi.ReduceOnlineNum();
             Application.UnLock();
             GlobalSessionEnd();
         }
 
         protected void Application_BeginRequest(object sender, EventArgs e)
         {
-            Log2Net.LogApi.WriteFirstVisitLog();//写初次访问日志
+            LogApi.WriteFirstVisitLog();//写初次访问日志
         }
 
 

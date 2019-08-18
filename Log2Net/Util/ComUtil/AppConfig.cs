@@ -1,4 +1,6 @@
-﻿using Log2Net.Models;
+﻿using Log2Net.Config;
+using Log2Net.Models;
+using System;
 
 #if NET
 using System.Web.Configuration;
@@ -6,7 +8,6 @@ using System.Web.Configuration;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.FileProviders;
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Versioning;
@@ -15,7 +16,7 @@ using System.Runtime.Versioning;
 namespace Log2Net.Util
 {
 
-    internal class AppConfig
+    public class AppConfig
     {
 
 #if NET
@@ -32,6 +33,8 @@ namespace Log2Net.Util
             //   webName = hostingEnvironment.ApplicationName;
 #endif
         }
+
+        //根据键获取配置值
         public static string GetConfigValue(string key)
         {
 #if NET
@@ -51,8 +54,7 @@ namespace Log2Net.Util
 #endif
         }
 
-
-
+        //获取数据库连接字符串
         public static string GetDBConnectString(string sqlStrKey)
         {
             try
@@ -70,6 +72,107 @@ namespace Log2Net.Util
             }
         }
 
+        //获取使用哪里的配置
+        internal static CfgMode GetConfigMode()
+        {
+            string val = GetConfigValue("ConfigInWhere");
+            try
+            {
+                var cfgMode = StringEnum.GetEnumValue<CfgMode>(val);
+                return cfgMode;
+            }
+            catch
+            {
+                return CfgMode.MixF;
+            }
+        }
+
+        //综合文件和代码中的配置，获取最终的配置结果
+        internal static T GetFinalConfig<T>(string keyInFie, T defaultVal, T valInCode)
+        {
+            T result = defaultVal;
+            var cfgWhere = GetConfigMode();
+            if (cfgWhere == CfgMode.File)
+            {
+                try
+                {
+                    result = GetCfgValueFromFile(keyInFie, defaultVal);
+                }
+                catch
+                {
+                    result = defaultVal;
+                }
+            }
+            else if (cfgWhere == CfgMode.Code)
+            {
+                result = valInCode;
+            }
+            else//混合模式
+            {
+                T fileCfgVal = default(T);
+                try
+                {
+                    fileCfgVal = GetCfgValueFromFile(keyInFie, defaultVal);
+                    if (cfgWhere == CfgMode.MixC)//冲突时优先使用代码中的
+                    {
+                        if (valInCode.Equals(default(T)))//代码中的值为空，则使用文件中
+                        {
+                            return fileCfgVal;
+                        }
+                        else
+                        {
+                            return valInCode;
+                        }
+                    }
+                    else //冲突时优先使用文件中的
+                    {
+                        if (fileCfgVal.Equals(default(T)))//文件中的值为空，则使用代码中
+                        {
+                            return valInCode;
+                        }
+                        else
+                        {
+                            return fileCfgVal;
+                        }
+                    }
+
+                }
+                catch
+                {
+                    return defaultVal;
+                }
+
+            }
+            return result;
+        }
+
+        //从文件中获取配置值
+        static T GetCfgValueFromFile<T>(string keyInFie, T defaultVal)
+        {
+            T result = defaultVal;
+            var curVal = Log2NetConfig.GetConfigVal(keyInFie);
+            var curType = typeof(T);
+
+            if (curType.IsEnum)
+            {
+                result = StringEnum.GetEnumValue<T>(curVal);
+                return result;
+            }
+            if (curType.Name == "Boolean")
+            {
+                curVal = curVal == "1" || curVal.Equals("true", StringComparison.OrdinalIgnoreCase) ? "true" : "false";
+            }
+            result = (T)Convert.ChangeType(curVal, typeof(T));
+            return result;
+        }
+
+        //根据缓存类型获取缓存的键
+        internal static string GetCacheKey(CacheConst cacheConst)
+        {
+            var text = webName + "." + cacheConst.ToString();
+            int length = text.Length;
+            return text;
+        }
 
 #if NET
 #else
@@ -112,6 +215,10 @@ namespace Log2Net.Util
 
         static string GetRealKey(string key)
         {
+            if(Configuration == null)
+            {
+                throw new Exception("请确保您已注册了Log2netService");
+            }
             if (keysDic.Count <= 0)
             {
                 var fir = Configuration.GetChildren();
@@ -175,14 +282,6 @@ namespace Log2Net.Util
 
 #endif
 
-
-
-        public static string GetCacheKey(CacheConst cacheConst)
-        {
-            var text = webName + "." + cacheConst.ToString();
-            int length = text.Length;
-            return text;
-        }
 
 
 

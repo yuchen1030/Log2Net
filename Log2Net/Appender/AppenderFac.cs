@@ -1,10 +1,7 @@
-﻿using Log2Net.Config;
-using Log2Net.LogInfo;
-using Log2Net.Models;
+﻿using Log2Net.Models;
 using Log2Net.Util;
 using Log2Net.Util.DBUtil.Models;
 using System.Collections.Generic;
-using System.Data.SqlTypes;
 using System.Linq;
 using static Log2Net.LogInfo.LogCom;
 
@@ -16,7 +13,7 @@ namespace Log2Net.Appender
         static readonly object locker = new object();
         static BaseAppender appender = null;
 
-        //1、写到文件；2、直接写到数据库；3、消息队列写到数据库；
+        //1、写到文件；2、直接写到数据库；3、通过队列写到数据库；4、消息队列写到数据库；
         public static BaseAppender AppenderFactory()
         {
             if (appender != null)
@@ -27,30 +24,30 @@ namespace Log2Net.Appender
             {
                 if (appender == null)
                 {
-                    var appenderType = Log2NetConfig.GetConfigVal("appenderType");              
                     string typeStr = "文件";
-                    if (appenderType == "2")
+                    LogAppendType logAppendType = AppConfig.GetFinalConfig("appenderType", LogAppendType.File, LogApi.GetLogAppendType());
+                    if (logAppendType == LogAppendType.DB)
                     {
                         appender = new DirectDBAppender();
                         typeStr = "直连数据库";
                     }
-                    else if (appenderType == "3")
+                    else if (logAppendType == LogAppendType.Queue2DB)
+                    {
+                        appender = new Queue2DBAppender();
+                        typeStr = "队列数据库";
+                    }
+                    else if (logAppendType == LogAppendType.MQ2DB)
                     {
                         appender = new MQ2DBAppender();
                         typeStr = "消息队列数据库";
                     }
-                    //else if (appenderType == "4")
-                    //{
-                    //    appender = new EFAppender();
-                    //    typeStr = "EF数据库";
-                    //}
                     else
                     {
                         appender = new FileAppender();
                         typeStr = "文件";
                     }
                     string msg = "日志记录方式为【" + typeStr + "】";
-                    LogApi.WriteMsgToDebugFile(new { 内容 = msg });
+                    WriteModelToFileForDebug(new { 内容 = msg });
                 }
             }
             return appender;

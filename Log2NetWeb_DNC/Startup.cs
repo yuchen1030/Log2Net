@@ -1,19 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Log2Net;
-using Log2Net.Util.DBUtil.EF2DB;
+﻿using Log2Net;
+using Log2Net.Models;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.DependencyInjection.Extensions;
+using System.Collections.Generic;
 
-
-namespace Log2NetWeb
+namespace Log2NetWeb_DNC
 {
     public class Startup
     {
@@ -28,6 +21,7 @@ namespace Log2NetWeb
         public void ConfigureServices(IServiceCollection services)
         {
             LogApi.AddLog2netService(services, Configuration);
+            services.AddSession();
             services.AddMvc();
         }
 
@@ -44,7 +38,7 @@ namespace Log2NetWeb
             {
                 app.UseExceptionHandler("/Home/Error");
             }
-
+            app.UseSession();
             app.UseStaticFiles();
 
             app.UseMvc(routes =>
@@ -56,16 +50,13 @@ namespace Log2NetWeb
 
             appLifetime.ApplicationStarted.Register(() => StartFunction());
             appLifetime.ApplicationStopped.Register(() => StopFunction());
-
-
-
         }
 
 
         //应用启动事件
         void StartFunction()
         {
-            LogApi.RegisterLogInitMsg(Log2Net.Models.SysCategory.SysI_01, null);
+            LogApi.RegisterLogInitMsg(Log2Net.Models.SysCategory.SysI_01, null, GetUserConfigItemByCode(), GetLogWebApplicationsNameByCode());
         }
 
         //应用停止事件
@@ -73,6 +64,49 @@ namespace Log2NetWeb
         {
             LogApi.WriteServerStopLog();
         }
+
+
+        #region 用户对日志系统的代码配置
+        Dictionary<SysCategory, string> GetLogWebApplicationsNameByCode()
+        {
+            Dictionary<SysCategory, string> kvInCode = new Dictionary<SysCategory, string>()
+            {
+                {   SysCategory.SysA_01,"淘宝网" }
+            };
+            return kvInCode;
+        }
+
+        UserCfg GetUserConfigItemByCode()
+        {
+            UserCfg cfg = new UserCfg()
+            {
+                LogLevel = LogLevel.Info,
+                LogAppendType = LogAppendType.DB,
+                LogMonitorIntervalMins = 10,
+                IsWriteInfoToDebugFile = false,
+                LogToFilePath = "App_Data/Log_Files",
+                DBAccessType = DBAccessType.ADONET,
+                TraceDataBaseType = DataBaseType.SqlServer,
+                MonitorDataBaseType = DataBaseType.SqlServer,
+                TraceDBConKey = "logTraceSqlStr",
+                MonitorDBConKey = "logMonitorSqlStr",
+                IsConnectStrInCode = false,
+                IsInitTraceDBWhenOracle = false,
+                IsInitMonitorDBWhenOracle = false,
+                OracleDriverType = OracleDriverType.Oracle,
+                RabbitMQServer = "localhost:5672;oawxAdmin1;admin123.123",
+                IsWriteToInfluxDB = false,
+                InfluxDBServer = "http://127.0.0.1:8086/;logAdmin;sa123.123",
+                CacheType = CacheType.MSHttp,
+                MemCacheServer = "127.0.0.1:11211;127.0.0.2:11211",
+                RedisCacheServer = "127.0.0.1:6379;127.0.0.2:6379",
+                TraceDBConStr = "data source=.;initial catalog=LogTraceW;user id=sa;password=sa123.123;multipleactiveresultsets=True;application name=EntityFramework",
+                MonitorDBDBConStr = "data source=.;initial catalog=LogMonitorW;user id=sa;password=sa123.123;MultipleActiveResultSets=True;application name=EntityFramework",
+            };
+            return cfg;
+        }
+        #endregion 用户对日志系统的代码配置
+
 
 
     }

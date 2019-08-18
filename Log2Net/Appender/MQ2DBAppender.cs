@@ -6,37 +6,16 @@ using System.Threading;
 
 namespace Log2Net.Appender
 {
-    internal class MQ2DBAppender : DirectDBAppender
-    {
-        static MQ2DBAppender()
-        {
-            new MQ2DBAppender().StartMQTask();
-        }
+    //使用 RabbitMQ消息队列的Appender
+    internal class MQ2DBAppender : Buffer2DBAppender
+    {       
+ 
+        protected override string BufferType { get { return "RabbitMQ消息队列"; } }
 
-
-        //开启线程消费队列中的内容
-        void StartMQTask()
-        {
-            //开启线程消费队列中的内容
-            ThreadPool.QueueUserWorkItem(StartWriteTraceDataService, null);//启动写trace日志数据服务
-            ThreadPool.QueueUserWorkItem(StartWriteMonitorDataService, null);//启动写monitor日志数据服务
-        }
-
-        //将Log_OperateTraceR内容写到队列中
-        protected override ExeResEdm WriteLog(Log_OperateTrace model)
-        {
-            return SendLogToQueue(model, MQType.TraceLog);
-        }
-
-        //将Log_SystemMonitorR内容写到队列中
-        protected override ExeResEdm WriteLog(Log_SystemMonitorMQ model)
-        {
-            return SendLogToQueue(model, MQType.MonitorLog);
-        }
-
+        #region 队列数据的生产和消费的子类实现
 
         //将日志发送到队列中
-        ExeResEdm SendLogToQueue(object model, MQType mqType)
+        protected override ExeResEdm SendLogToQueue(object model, MQType mqType)
         {
             if (mqType == MQType.TraceLog)//是操作轨迹类数据
             {
@@ -54,40 +33,21 @@ namespace Log2Net.Appender
         }
 
 
-
-        #region 队列数据消费
         //启动队列服务，检查队列，若有消息则写数据到数据库
-        void StartWriteTraceDataService(object o)
+        protected override void StartWriteTraceDataService(object o)
         {
             RabbitMQManager.Recive<Log_OperateTrace>(WriteTraceDataToDB, MQType.TraceLog);
-            //Log_OperateTraceBllEdm logModel = new Log_OperateTraceBllEdm() { Detail = "轨迹日志队列服务启动" };
-            //LogApi.WriteLog(logModel);
         }
 
         //启动队列服务，检查队列，若有消息则写数据到数据库
-        void StartWriteMonitorDataService(object o)
+        protected override void StartWriteMonitorDataService(object o)
         {
             RabbitMQManager.Recive<Log_SystemMonitorMQ>(WriteMonitorDataToDB, MQType.MonitorLog);
-            //Log_OperateTraceBllEdm logModel = new Log_OperateTraceBllEdm() { Detail = "监控日志队列服务启动" };
+            //LogTraceEdm logModel = new LogTraceEdm() { Detail = "监控日志队列服务启动" };
             //LogApi.WriteLog(logModel);
         }
 
-        //写轨迹数据到MS SQL和InfluxDB
-        void WriteTraceDataToDB(Log_OperateTrace obj)
-        {
-            base.WriteLog(obj);
-            return;
-        }
-
-        //写监控数据到MS SQL和InfluxDB
-        void WriteMonitorDataToDB(Log_SystemMonitorMQ obj)
-        {
-            base.WriteLog(obj);
-            return;
-        }
-
-        #endregion 队列数据消费
-
+        #endregion 队列数据的生产和消费的子类实现
 
 
     }

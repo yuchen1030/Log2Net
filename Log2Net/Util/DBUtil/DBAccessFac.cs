@@ -1,11 +1,8 @@
-﻿using Log2Net.Config;
-using Log2Net.Models;
-using Log2Net.Util.DBUtil.AdoNet;
+﻿using Log2Net.Models;
 using Log2Net.Util.DBUtil.Dal;
 using Log2Net.Util.DBUtil.EF2DB;
-using Log2Net.Util.DBUtil.Models;
 using System;
-using System.Linq;
+using Log2Net.LogInfo;
 
 namespace Log2Net.Util.DBUtil
 {
@@ -13,24 +10,22 @@ namespace Log2Net.Util.DBUtil
     internal abstract class DBAccessFac<T> where T : class
     {
         static readonly object locker = new object();
-        static DBAccessDal<T> dBAccess = null;
-        public DBAccessDal<T> DBAccessFactory()
+        static IDBAccessDal<T> dBAccess = null;
+        public IDBAccessDal<T> DBAccessFactory()
         {
             if (dBAccess == null)
             {
                 lock (locker)
                 {
                     if (dBAccess == null)
-                    {
-                        var dbAccessType = Log2NetConfig.GetConfigVal("DBAccessTypeKey");
-                        DBAccessType dBAccessType = DBAccessType.ADONET;
-                        try { dBAccessType = StringEnum.GetEnumValue<DBAccessType>(dbAccessType); } catch { }
+                    {             
+                        DBAccessType dBAccessType = AppConfig.GetFinalConfig("DBAccessTypeKey", DBAccessType.ADONET, LogApi.GetDBAccessType());
                         string exMsg = "";
                         try { dBAccess = GetDalByDBAccessType(dBAccessType); }
                         catch (Exception ex) { exMsg = ", " + ex.Message; }
 
                         string msg = typeof(T).Name + "的数据库访问方式为【" + dBAccessType.ToString() + "】" + exMsg;
-                        LogApi.WriteMsgToDebugFile(new { 内容 = msg });
+                        LogCom.WriteModelToFileForDebug(new { 内容 = msg });
 
                     }
                 }
@@ -39,18 +34,14 @@ namespace Log2Net.Util.DBUtil
 
         }
 
-        public abstract DBAccessDal<T> GetDalByDBAccessType(DBAccessType dbAccessType);
-
-
-
-
+        public abstract IDBAccessDal<T> GetDalByDBAccessType(DBAccessType dbAccessType);
     }
 
 
     internal class Log_OperateTraceDBAccessFac : DBAccessFac<Log_OperateTrace>
     {
 
-        public override DBAccessDal<Log_OperateTrace> GetDalByDBAccessType(DBAccessType dbAccessType)
+        public override IDBAccessDal<Log_OperateTrace> GetDalByDBAccessType(DBAccessType dbAccessType)
         {
             if (dbAccessType == DBAccessType.EF)
             {
@@ -72,9 +63,7 @@ namespace Log2Net.Util.DBUtil
 
     internal class Log_SystemMonitorDBAccessFac : DBAccessFac<Log_SystemMonitor>
     {
-
-
-        public override DBAccessDal<Log_SystemMonitor> GetDalByDBAccessType(DBAccessType dbAccessType)
+        public override IDBAccessDal<Log_SystemMonitor> GetDalByDBAccessType(DBAccessType dbAccessType)
         {
             if (dbAccessType == DBAccessType.EF)
             {

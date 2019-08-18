@@ -1,21 +1,34 @@
 ﻿using Log2Net;
 using Log2Net.Models;
-using Log2NetWeb.Models;
+using Log2NetWeb_DNC.Models;
 using Microsoft.AspNetCore.Mvc;
 using System.Diagnostics;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc.Filters;
 
-namespace Log2NetWeb.Controllers
+namespace Log2NetWeb_DNC.Controllers
 {
-    public class HomeController : Controller
+    public class BaseController : Controller
+    {
+        public override void OnActionExecuting(ActionExecutingContext context)
+        {
+            GetCurrentUser();
+            base.OnActionExecuting(context);
+        }
+        void GetCurrentUser()
+        {
+            HttpContext.Session.SetString("curUserID", "UserID123_DNC");// Log2Net.DNCMiddleware.HttpContext.Current.Session.SetString("curUserID","UserID123_DNC");
+            HttpContext.Session.SetString("curUserName", "UserName123_DNC");
+        }
+    }
+
+    public class HomeController : BaseController
     {
         public IActionResult Index()
         {
-            Microsoft.AspNetCore.Http.HttpRequest httpRequest = Request;
-
-            var TTTT = Request.HttpContext.Connection.RemoteIpAddress;
-
             return View();
         }
+
 
         public IActionResult About()
         {
@@ -27,9 +40,9 @@ namespace Log2NetWeb.Controllers
         public IActionResult Contact()
         {
             ViewData["Message"] = "Your contact page.";
-
-            Log_OperateTraceBllEdm logModel = new Log_OperateTraceBllEdm() { Detail = "进入了关于页面" };
-            LogApi.WriteLog(LogLevel.Info, logModel);
+            LogTraceVM logModel = new LogTraceVM() { LogType = LogType.审批, Detail = "人间天堂，最美苏杭", TabOrModu = "联系我们" };
+            new ComClass().WriteLog(LogLevel.Info, logModel);
+            var logRes = LogApi.WriteLoginLog();
             return View();
         }
 

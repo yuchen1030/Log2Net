@@ -1,6 +1,6 @@
 using System;
 
-namespace Log2NetWeb.Models
+namespace Log2NetWeb_DNC.Models
 {
     public class ErrorViewModel
     {

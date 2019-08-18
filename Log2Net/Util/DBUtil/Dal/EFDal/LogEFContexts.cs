@@ -60,8 +60,8 @@ namespace Log2Net.Util.DBUtil.EF2DB
                 ToTable("Log_OperateTrace");
                 HasKey(m => m.Id);
                 Property(m => m.LogTime).IsRequired();//.HasColumnType("datetime"); 
-                Property(m => m.UserID).HasMaxLength(10);
-                Property(m => m.UserName).HasMaxLength(20);
+                Property(m => m.UserID).HasMaxLength(100);
+                Property(m => m.UserName).HasMaxLength(200);
                 Property(m => m.ServerIP).HasMaxLength(20).IsRequired();
                 Property(m => m.ServerHost).HasMaxLength(40).IsRequired();
                 Property(m => m.ClientHost).HasMaxLength(40).IsRequired();
@@ -192,8 +192,8 @@ namespace Log2Net.Util.DBUtil.EF2DB
                 builder.ToTable("Log_OperateTrace");
                 builder.HasKey(m => m.Id);
                 builder.Property(m => m.LogTime).IsRequired();//.HasColumnType("datetime"); 
-                builder.Property(m => m.UserID).HasMaxLength(10);
-                builder.Property(m => m.UserName).HasMaxLength(20);
+                builder.Property(m => m.UserID).HasMaxLength(100);
+                builder.Property(m => m.UserName).HasMaxLength(200);
                 builder.Property(m => m.ServerIP).HasMaxLength(20).IsRequired();
                 builder.Property(m => m.ServerHost).HasMaxLength(40).IsRequired();
                 builder.Property(m => m.ClientHost).HasMaxLength(40).IsRequired();

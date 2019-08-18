@@ -23,8 +23,8 @@ namespace Log2Net.Util.DBUtil.AdoNet.Oracle
                     if (OracleHelper == null)
                     {
 #if NET
-                        var orclHelperType = Log2NetConfig.GetConfigVal("OracleDriverType");//0：Oracle 驱动
-                        if (orclHelperType == "1")   //微软驱动
+                        var orclHelperType = AppConfig.GetFinalConfig("OracleDriverType",  OracleDriverType.Oracle, LogApi.GetOracleDriverType());
+                        if (orclHelperType ==  OracleDriverType.MS)   //微软驱动
                         {
                             OracleHelper = new OracleHelperMS<T>(connstr);
                         }

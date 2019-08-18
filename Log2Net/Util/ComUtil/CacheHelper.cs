@@ -21,14 +21,21 @@ namespace Log2Net.Util
     {
         public static ICache CacheFactory()
         {
-            string type = Log2NetConfig.GetConfigVal("CacheStrategy");  //获取缓存类型
-            if (type != "0")
+            try
             {
-                return CMCacheHelper.Instance;  // CacheManager缓存
+                var type = AppConfig.GetFinalConfig("CacheStrategy", Models.CacheType.MSHttp, LogApi.GetCacheStrategy());//获取缓存类型
+                if (type != Models.CacheType.MSHttp)
+                {
+                    return CMCacheHelper.Instance;  // CacheManager缓存
+                }
+                else
+                {
+                    return HttpCacheHelper.dataCache; //原始net缓存
+                }
             }
-            else
+            catch (Exception ex)
             {
-                return HttpCacheHelper.dataCache; //原始net缓存
+                throw ex;
             }
         }
     }
@@ -68,16 +75,15 @@ namespace Log2Net.Util
                             try
                             {
                                 //1：NET系统缓存（CacheManager中）；2：Memcached缓存；3：Redis缓存
-                                string type = Log2NetConfig.GetConfigVal("CacheStrategy");  //获取缓存类型
-
-                                Dictionary<string, int> serverList = GetServerPort(type == "3");
+                                var type = AppConfig.GetFinalConfig("CacheStrategy",  Models.CacheType.CMHttp, LogApi.GetCacheStrategy());//获取缓存类型
+                                Dictionary<string, int> serverList = GetServerPort(type ==  Models.CacheType.Redis);
                                 if (serverList == null || serverList.Count <= 0)
                                 {
                                     bNeedHttpCache = true;
                                 }
                                 else
                                 {
-                                    if (type == "2")
+                                    if (type ==  Models.CacheType.Memcached)
                                     {
 #if NET
 
@@ -98,7 +104,7 @@ namespace Log2Net.Util
                                         #endregion 使用memcache缓存
 #endif
                                     }
-                                    else if (type == "3")
+                                    else if (type ==  Models.CacheType.Redis)
                                     {
 
                                         #region 使用Redis缓存
@@ -180,12 +186,16 @@ namespace Log2Net.Util
         static Dictionary<string, int> GetServerPort(bool bRedis)
         {
             Dictionary<string, int> serverList = new Dictionary<string, int>();
-            string key = "RedisCacheServer";
+            var serverStr = "";
             if (!bRedis)
             {
-                key = "MemCacheServer";
+                serverStr = AppConfig.GetFinalConfig("MemCacheServer", "", LogApi.GetMemCacheServer());
             }
-            var serverStr = Log2NetConfig.GetConfigVal(key);
+            else
+            {
+                serverStr = AppConfig.GetFinalConfig("RedisCacheServer", "", LogApi.GetRedisCacheServer());
+            }
+
             if (string.IsNullOrEmpty(serverStr))
             {
                 return serverList;
@@ -228,10 +238,10 @@ namespace Log2Net.Util
             key = GetFinalKey(key);
             manager.Put(key, value);    //    manager.AddOrUpdate(key, value, v => value);    
             int sec = (seconds != 0 ? seconds : GetExpireTime(expireType));
-            if(sec <= 0)
+            if (sec <= 0)
             {
                 sec = (int)Expire.Defalut;
-            }            
+            }
             manager.Expire(key, TimeSpan.FromSeconds(sec));   //设置某个键的过期时间                                                                                                          
         }
 
@@ -292,6 +302,10 @@ namespace Log2Net.Util
         // 设置当前应用程序指定CacheKey的Cache值
         public void SetCache(string CacheKey, object objObject, int secondsSpan = 0, Expire expireType = Expire.Defalut)
         {
+            if(objObject == null)
+            {
+                return;
+            }
             CacheKey = GetFinalKey(CacheKey);
             int cueSeconds = secondsSpan > 0 ? secondsSpan : GetExpireTime(expireType);
             if (cueSeconds < 0)

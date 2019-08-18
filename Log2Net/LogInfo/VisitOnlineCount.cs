@@ -24,10 +24,10 @@ namespace Log2Net.LogInfo
             public static IVisitCount GetInstance()
             {
                 //简单工厂使用方法如下：
-                string type = Log2NetConfig.GetConfigVal("VisitCountStrategy");  //获取类型：默认为0缓存，为1则使用Application
 
 #if NET
-                if (type == "1")
+                string type = "0";//   VisitCountStrategy：默认为0缓存，为1则使用Application
+                if (type == "1" && ApplicationVisitCount.ApplicationObj != null)
                 {
                     return new ApplicationVisitCount();
                 }

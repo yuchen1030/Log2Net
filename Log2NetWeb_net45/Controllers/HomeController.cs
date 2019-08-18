@@ -3,10 +3,36 @@ using Log2Net.LogInfo;
 using Log2Net.Models;
 using System.Collections.Generic;
 using System.Web.Mvc;
+using System.Linq;
 
 namespace Log2NetWeb_net45.Controllers
 {
-    public class HomeController : Controller
+
+
+    public class BaseController : Controller
+    {
+        protected override void OnActionExecuting(ActionExecutingContext filterContext)
+        {
+            GetCurrentUser();
+            base.OnActionExecuting(filterContext);
+        }
+        void GetCurrentUser()
+        {
+            try
+            {
+                System.Web.HttpContext.Current.Session["curUserID"] = "UserID123";
+                System.Web.HttpContext.Current.Session["curUserName"] = "UserName123";
+            }
+            catch
+            {
+
+            }
+        }
+
+
+    }
+
+    public class HomeController : BaseController
     {
         public ActionResult Index()
         {
@@ -15,30 +41,23 @@ namespace Log2NetWeb_net45.Controllers
 
         public ActionResult About()
         {
-            //VisitOnline.IVisitCount IVisitCount = VisitOnline.VisitCountFactory.GetInstance();
-
-            //IVisitCount.SetVisitNumWhenInit();
-            //int OnlineCnt = IVisitCount.GetOnlineNum(); //System.Web.HttpContext.Current.Session.Contents.Count;
+            ViewBag.Message = "Your application description page.";
+            LogTraceVM model = new LogTraceVM()
+            {
+                Detail = "所有的程序员都是天才编剧，所有的计算机都是烂演员~",
+                LogType = LogType.审核,
+                Remark = "同意嘛",
+                TabOrModu = "关于页面",
+            };
+            var logRes = new ComClass().WriteLog(LogLevel.Info, model);
 
             Dictionary<SysCategory, string> dic = LogApi.GetLogWebApplicationsName();
-            ViewBag.Message = "Your application description page.";
-
-            Log_OperateTraceBllEdm model = new Log_OperateTraceBllEdm()
-            {
-                Detail = "Log2 dll test",
-                LogType = LogType.业务记录,
-                Remark = "test",
-                TabOrModu = "ce shi",
-                UserID = "A7895",
-                UserName = "hanmeimei",
-            };
-            //AdoNetAppender appender = new AdoNetAppender();
-            //appender.WriteLogAndHandFail(model);
-            LogApi.WriteLog(LogLevel.Info, model);
-
-
+            LogApi.WriteLoginLog();
             return View();
         }
+
+
+
 
         public ActionResult Contact()
         {

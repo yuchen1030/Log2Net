@@ -32,7 +32,7 @@ namespace Log2Net.Util.DBUtil.EF2DB
     }
 
 
-    internal class EFBaseDal<T> : DBAccessDal<T> where T : class
+    internal class EFBaseDal<T> : IDBAccessDal<T> where T : class
     {
         protected DbContext Context;
         protected DbSet<T> DbSet;
@@ -42,7 +42,7 @@ namespace Log2Net.Util.DBUtil.EF2DB
             this.DbSet = context.Set<T>();
         }
 
-        internal override ExeResEdm GetAll(PageSerach<T> para)
+        public  ExeResEdm GetAll(PageSerach<T> para)
         {
             if (para == null)
             {
@@ -77,7 +77,7 @@ namespace Log2Net.Util.DBUtil.EF2DB
 
         }
 
-        internal override ExeResEdm Add(AddDBPara<T> dBPara)
+        public  ExeResEdm Add(AddDBPara<T> dBPara)
         {
             ExeResEdm dBResEdm = new ExeResEdm() { };
             try

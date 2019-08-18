@@ -4,17 +4,16 @@ using Log2Net.LogInfo;
 using static Log2Net.LogInfo.LogCom;
 using Log2Net.Models;
 using Log2Net.Util;
-using Log2Net.Util.DBUtil.Models;
 using Log2Net.Util.DBUtil;
 using Log2Net.Util.DBUtil.EF2DB;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
+using System.IO;
 
 
 #if NET
-
 using System.Diagnostics;
 using System.Reflection;
 using System.Web;
@@ -47,14 +46,14 @@ namespace Log2Net
     //9、在Configure配置(Configure)中添加配置：LogApi.AddLog2netConfigure方法；
 
 
-    //日志组件使用的配置项有22个，根据实际应用情况进行配置：前20个在configuration/appSettings中配置，后两个在configuration/connectionStrings中配置。
+    //日志组件使用的配置项有24个，根据实际应用情况进行配置：前20个在Log2NetCfg文件中配置，
+    //接下来的两个在configuration/connectionStrings中配置，最后的两个在configuration/appSettings中配置。
 
     /****日志组件基础配置******/
-
-    //    <!--日志级别：1、Off；2、Error；3、Warn； 4、Business ；5、DBRec； 6、Info；7、Debug （默认为7）-->
+    //<!--日志级别：1、Off；2、Error；3、Warn； 4、Business ；5、DBRec； 6、Info；7、Debug （默认为7）-->
     //<add key = "log2NetLevel" value="7" />
 
-    //<!--日志记录方式：1、写到文件；2、直接写到数据库；3、消息队列写到数据库；默认为1-->
+    //<!--日志记录方式：1、写到文件；2、直接写到数据库；3、通过队列写到数据库；4、消息队列写到数据库；默认为1-->
     //<add key = "appenderType" value="1"/>
 
     //<!--监控日志每隔多少分钟记录一次，默认为10分钟,若小于0则不监控-->
@@ -65,14 +64,11 @@ namespace Log2Net
 
     //<!--netCore中session过期时间配置，单位为分钟，默认值为20-->
     //<add key = "dncSessionTimeoutMins" value="20"/>
-
     /****日志组件基础配置******/
-
 
     /****写日志到文件的配置******/
     //<!--写文件的路径（仅在日志记录方式为1时有效）-->
     //<add key = "logToFilePath" value="App_Data/Log_Files"/>
-
     /****写日志到文件的配置******/
 
     /****数据库方式配置******/
@@ -89,6 +85,9 @@ namespace Log2Net
     //<!--monitor数据库的数据库连接字符串name值。默认为logMonitorSqlStr-->
     //<add key = "UserCfg_MonitorDBConKey" value="logMonitorSqlStr" />
 
+    //<!--是否使用代码中的数据库连接字符串-->
+    //<add key = "ConnectStrIsInCode" value="0" />
+
     /****数据库方式配置******/
 
     /****oracle配置******/
@@ -100,9 +99,7 @@ namespace Log2Net
 
     //<!--Oracle数据库驱动方式：0 oracle驱动， 1 微软驱动，默认为0-->
     //<add key = "OracleDriverType" value="0"/>
-
     /****oracle配置******/
-
 
     /****消息队列配置******/
     //<!--消息队列服务器(地址、用户名、密码)-->
@@ -117,7 +114,6 @@ namespace Log2Net
     //<add key = "InfluxDBServer_Log" value="http://127.0.0.1:8086/;userName;userPwd"/>
     /****InfluxDB配置******/
 
-
     /****缓存配置******/
     //<!--缓存策略：0、NET缓存；1、CacheManager中的NET系统缓存；2、Memcached缓存；3、Redis缓存；默认为0-->
     //<add key = "CacheStrategy" value="1"/>
@@ -127,9 +123,7 @@ namespace Log2Net
 
     //<!--Redis缓存服务器-->
     //<add key = "RedisCacheServer" value="127.0.0.1:6379;127.0.0.2:6379"/>
-
     /****缓存配置******/
-
 
     /****数据库配置******/
     //<!--操作轨迹日志的数据库-->
@@ -140,24 +134,45 @@ namespace Log2Net
     /****数据库配置******/
 
 
-    /********************************************************使用方法介绍结束***************************************************/
-    #endregion 日志组件使用说明
+    /****WebConfig总体配置******/
+    //<!--Log2Net模块的section名称-->
+    //<add key = "log2netCfgSectionName" value="log2netCfg" />
 
+    //<!--使用哪里的配置：File = 1,使用文件中的配置；Code = 2,使用代码中的配置；MixF = 3,混合使用，冲突时使用文件中的配置；MixC = 4,混合使用，冲突时使用代码中的配置；默认值为3(MixF)-->
+    //<add key = "ConfigInWhere" value="1" />
+    /****WebConfig总体配置******/
+
+    /********************************************************使用方法介绍结束***************************************************/
+    #endregion 日志组件使用说明          
 
 
     /// <summary>
-    /// 对外使用的日志组件接口类
+    /// 对外使用的日志组件接口类：写用户业务日志、监控日志、特殊日志等
+    /// 写用户业务日志和监控日志时，不需要包含服务器信息，不需要包含用户信息等，会自动采集；
+    /// 特殊日志有以下几类:
+    /// 服务器启动时，获取操作系统，.NET CLR版本；
+    /// 网站被初次访问，记录记录IIS版本；
+    /// 服务器停止时，获取已运行时间；
+    /// 系统异常时，记录异常日志
     /// </summary>  
-    public class LogApi
+    public static class LogApi
     {
+        #region 变量定义
+        static int logReadThreadSleepNum = 10;// 10秒
+        static int logBackupWarnNum = 100;   //日志备份数量上限，到达则提醒     
         static LogLevel logLevelCfg = LogLevel.Debug;
-        static ICache dataCache = CacheFac.CacheFactory();
-        static BaseAppender appender = AppenderFac.AppenderFactory();
-
+        static ICache dataCache = null;// CacheFac.CacheFactory();
+        static BaseAppender appender = null;//AppenderFac.AppenderFactory();
+        static UserCfg userCfg = null;// GetUserConfigItem();
+        static Dictionary<SysCategory, string> webAppNames = null;
 #if NET
         static object lockObj = new object();
         static bool bRegister = false;
 #endif
+        #endregion 变量定义
+
+
+        #region 对外公开的方法
 
         /// <summary>
         /// 注册日志组件到本系统，为日志组件准备基础信息：服务器IP、服务器主机名，系统名称等
@@ -166,14 +181,16 @@ namespace Log2Net
         /// <param name="application">应用程序的Application对象</param>
         /// <param name="bWriteStartLog">是否是启动日志</param>
         /// <param name="bLogMonitor">是否写定时监控日志</param>
-        public static void RegisterLogInitMsg(SysCategory sys, object applicationObj, bool bWriteStartLog = true, bool bLogMonitor = true)
+        public static void RegisterLogInitMsg(SysCategory sys, object applicationObj = null, UserCfg userConfig = null, Dictionary<SysCategory, string> webAppName = null, bool bWriteStartLog = true, bool bLogMonitor = true)
         {
-            var logLevelStr = Log2NetConfig.GetConfigVal("log2NetLevel");
-            try
-            {
-                logLevelCfg = StringEnum.GetEnumValue<LogLevel>(logLevelStr);
-            }
-            catch { }
+            webAppNames = webAppName ?? new Dictionary<SysCategory, string>();
+            new HttpCacheHelper().SetCache(AppConfig.GetCacheKey(CacheConst.userCfgInCode), userConfig, expireType: Expire.Month);
+            userCfg = GetUserConfigItem();
+            userCfg = userCfg ?? new UserCfg();
+            dataCache = CacheFac.CacheFactory();
+            appender = AppenderFac.AppenderFactory();
+
+            logLevelCfg = AppConfig.GetFinalConfig("log2NetLevel", LogLevel.Debug, GetLog2NetLevel());
             if (logLevelCfg == LogLevel.Off)
             {
                 return;
@@ -185,7 +202,6 @@ namespace Log2Net
             ApplicationVisitCount.ApplicationObj = applicationObj;
 #endif
 
-
             //var machineName = System.Web.HttpContext.Current.Server.MachineName;//服务器计算机名
             var machineName = Environment.MachineName;//服务器计算机名
             var server = ClientServerInfo.ClientInfo.GetIPAccordingHost(machineName);
@@ -194,15 +210,13 @@ namespace Log2Net
             dataCache.SetCache(AppConfig.GetCacheKey(CacheConst.serverHost), machineName, expireType: Expire.Month);
             dataCache.SetCache(AppConfig.GetCacheKey(CacheConst.systemName), sys, expireType: Expire.Month);
 
-
-
             #region 使用EF自动创建数据库
             try
             {
-                var initTraceDBWhenOracle = Log2NetConfig.GetConfigVal("initTraceDBWhenOracle");
+                var initTraceDBWhenOracle = AppConfig.GetFinalConfig("initTraceDBWhenOracle", false, LogApi.IsInitTraceDBWhenOracle());
                 //     initTraceDBWhenOracle = "1";
                 var traceDBType = ComDBFun.GetDBGeneralInfo(DBType.LogTrace).DataBaseType;
-                if (traceDBType != DataBaseType.Oracle || (traceDBType == DataBaseType.Oracle && initTraceDBWhenOracle == "1"))
+                if (traceDBType != DataBaseType.Oracle || (traceDBType == DataBaseType.Oracle && initTraceDBWhenOracle))
                 {
                     using (var context = new Log_OperateTraceContext())  //oracle 不建议使用EF，会导致字段名和数据库名必须加引号
                     {
@@ -214,10 +228,10 @@ namespace Log2Net
                     }
                 }
 
-                var initMonitorDBWhenOracle = Log2NetConfig.GetConfigVal("initMonitorDBWhenOracle");
+                var initMonitorDBWhenOracle = AppConfig.GetFinalConfig("initMonitorDBWhenOracle", false, LogApi.IsInitMonitorDBWhenOracle());
                 //    initMonitorDBWhenOracle = "1";
                 var monitorDBType = ComDBFun.GetDBGeneralInfo(DBType.LogMonitor).DataBaseType;
-                if (monitorDBType != DataBaseType.Oracle || (monitorDBType == DataBaseType.Oracle && initMonitorDBWhenOracle == "1"))
+                if (monitorDBType != DataBaseType.Oracle || (monitorDBType == DataBaseType.Oracle && initMonitorDBWhenOracle))
                 {
                     using (var context = new Log_SystemMonitorContext())
                     {
@@ -241,7 +255,7 @@ namespace Log2Net
                 WriteServerStartupLog();//系统启动的日志
             }
 
-            LogCom.StartThreadToWriteFileToAppender();  //开启线程，将备份日志写到Appender中
+            StartThreadToWriteFileToAppender();  //开启线程，将备份日志写到Appender中
 
             //在线人数和访客人数的初始化
             VisitOnline.VisitCountFactory.GetInstance().SetVisitNumWhenInit();
@@ -251,67 +265,54 @@ namespace Log2Net
             }
         }
 
-        //开启定时任务，写监控日志
-        static void WriteMonitorLogThread()
+        /// <summary>
+        /// 获取用户自定义的系统名称
+        /// </summary>
+        public static Dictionary<SysCategory, string> GetLogWebApplicationsName()
         {
-            int sleepMillSec = 600000;//10分钟
-            try
+            var cfgWhere = AppConfig.GetConfigMode();
+            if (cfgWhere == CfgMode.File)
             {
-                int sleepMillSecTemp = (int)(Convert.ToDouble(Log2NetConfig.GetConfigVal("logMonitorIntervalMins")) * 60000);
-                if (sleepMillSecTemp > 0)
+                var cfgInFile = GetLogWebApplicationsNameFromFile();
+                return cfgInFile;
+            }
+            else if (cfgWhere == CfgMode.Code)
+            {
+                return webAppNames;
+            }
+            else
+            {
+                var cfgInFile = GetLogWebApplicationsNameFromFile();
+                var kvInCode = webAppNames;
+                if (cfgWhere == CfgMode.MixC)//有相同值，使用Code中的
                 {
-                    sleepMillSec = sleepMillSecTemp;
-                }
-            }
-            catch
-            {
-
-            }
-            if (sleepMillSec <= 0)
-            {
-                return;
-            }
-
-            int num = 0;
-            Thread thread = new Thread(() =>
-            //     thread = new Thread(new ThreadStart(() =>
-            {
-                Thread.Sleep(1000 * 30);
-                while (true)
-                {
-                    try
+                    foreach (var item in cfgInFile)
                     {
-                        num++;
-                        LogMonitorEdm monitor = new LogMonitorEdm() { Remark = "定时监控" };
-                        WriteLog(monitor);
-                        WriteMsgToDebugFile(new { 内容 = DateTime.Now.ToString("HH:mm:ss.fff") + " , 第" + num + "次记录监控日志" });
+                        try { kvInCode.Add(item.Key, item.Value); } catch { }
                     }
-                    catch
-                    {
-
-                    }
-                    finally
-                    {
-                        Thread.Sleep(sleepMillSec);
-
-                    }
+                    return kvInCode;
 
                 }
-            });
-            thread.IsBackground = true;
-            thread.Priority = ThreadPriority.AboveNormal;
-            thread.Start();
-            Log_OperateTraceBllEdm logModel = new Log_OperateTraceBllEdm() { Detail = "定时监控服务启动，服务执行周期为" + (sleepMillSec / 60000.0) + "分钟" };
-            WriteLog(logModel);
+                else //   if (cfgWhere == CfgMode.MixF)//有相同值，使用File中的
+                {
+                    foreach (var item in kvInCode)
+                    {
+                        try { cfgInFile.Add(item.Key, item.Value); } catch { }
+                    }
+                    return cfgInFile;
+                }
+            }
+
+            // return cfgInFile;
+
         }
-
 
         /// <summary>
         /// 写操作轨迹类日志数据
         /// </summary>
         /// <param name="model">操作轨迹类数据</param>
         /// <returns>错误信息；若无错误，则返回空</returns>
-        public static string WriteLog(LogLevel logLevel, params Log_OperateTraceBllEdm[] model)
+        public static string WriteLog(LogLevel logLevel, params LogTraceEdm[] model)
         {
             if (logLevel > logLevelCfg)
             {
@@ -320,7 +321,6 @@ namespace Log2Net
             return WriteLog(model);
 
         }
-
 
         /// <summary>
         /// 写监控类数据
@@ -336,72 +336,41 @@ namespace Log2Net
             return WriteLog(model);
         }
 
-
-        static string WriteLog(params Log_OperateTraceBllEdm[] model)
+        /// <summary>
+        /// 将指定信息记录到文件中
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="model"></param>
+        public static void WriteMsgToInfoFile<T>(T model)
         {
-            if (model == null || model.Length <= 0)
-            {
-                return "";
-            }
-            try
-            {
-                List<Log_OperateTrace> list = new List<Log_OperateTrace>();
-                foreach (var item in model)
-                {
-                    Log_OperateTraceR cur = new Log_OperateTraceR()
-                    {
-                        Detail = item.Detail,
-                        LogType = item.LogType,
-                        Remark = item.Remark,
-                        TabOrModu = item.TabOrModu,
-                        UserID = !string.IsNullOrEmpty(item.UserID) ? item.UserID : item.UserName,
-                        UserName = !string.IsNullOrEmpty(item.UserName) ? item.UserName : item.UserID,
-                    };
-                    Log_OperateTrace log_OperateTrace = //AutoMapperExtension.MapTo<Log_OperateTrace>(cur);
-                    AutoMapperConfig.GetLog_OperateTraceModel(cur);
-                    list.Add(log_OperateTrace);
-                }
-
-                appender.WriteLogAndHandFail(list);
-                // SendLogToQueue(list, MQType.TraceLog);
-            }
-            catch (Exception ex)
-            {
-                return ex.Message;
-            }
-            return "";
+            WriteInfoToFile(model);
         }
 
-
-        static string WriteLog(params LogMonitorEdm[] model)
+        /// <summary>
+        /// 将信息写入到文件中，主要记录调试信息但又不想记录到日志中的信息（可通过WebConfig的bWriteInfoToDebugFile 配置项开启关闭之）
+        /// </summary>
+        /// <typeparam name="T">泛型类，可使用匿名类型</typeparam>
+        /// <param name="model"></param>
+        public static void WriteMsgToDebugFile<T>(T model)
         {
-            if (model == null || model.Length <= 0)
-            {
-                return "";
-            }
+            WriteModelToFileForDebug(model);
+        }
 
-            try
+        /// <summary>
+        /// 写用户登录日志
+        /// </summary>
+        public static string WriteLoginLog()
+        {
+            var client = ClientServerInfo.ClientInfo.GetClientInfo();
+            string userIP = client.IP + "[" + client.Host + "]";
+            string loginInfo = "用IP为：" + userIP + ",物理地址为：" + ClientServerInfo.ClientInfo.GetCustomerMac(userIP) + "," + ClientServerInfo.ClientInfo.GetUserAgentInfo() + "的计算机，于" + DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss") + "登录了平台";
+            LogTraceEdm model = new LogTraceEdm()
             {
-                List<Log_SystemMonitorMQ> list = new List<Log_SystemMonitorMQ>();
-                foreach (var item in model)
-                {
-                    Log_SystemMonitorR cur = new Log_SystemMonitorR()
-                    {
-                        Remark = item.Remark,
-                        PageViewNumR = XmlSerializeHelper.ToSqlXml(item.PagesView),
-                    };
-                    Log_SystemMonitorMQ log_SystemMonitorMQ = AutoMapperConfig.GetLog_SystemMonitorMQModel(cur);
-
-                    list.Add(log_SystemMonitorMQ);
-                }
-                appender.WriteLogAndHandFail(list);
-
-            }
-            catch (Exception ex)
-            {
-                return ex.Message;
-            }
-            return "";
+                LogType = LogType.登录,
+                TabOrModu = "登录模块",
+                Detail = loginInfo,
+            };
+            return WriteLog(model);
         }
 
         /// <summary>
@@ -415,34 +384,13 @@ namespace Log2Net
             {
                 var errMsg = ex.Message;
                 try { var innerMsg = ex.InnerException.InnerException.InnerException.Message; errMsg = !string.IsNullOrEmpty(innerMsg) ? innerMsg : errMsg; } catch { }
-                Log_OperateTraceBllEdm model = new Log_OperateTraceBllEdm() { LogType = LogType.异常, Detail = errMsg, Remark = remark, TabOrModu = module, UserID = "系统", UserName = "系统", };
+                LogTraceEdm model = new LogTraceEdm() { LogType = LogType.异常, Detail = errMsg, Remark = remark, TabOrModu = module, };
                 return WriteLog(model);
             }
             catch (Exception ex1)
             {
                 return ex1.Message;
             }
-        }
-
-
-        //写特殊日志:
-        //服务器启动时，获取操作系统，.NET CLR版本；
-        //网站被初次访问，记录记录IIS版本；
-        //服务器停止时，获取已运行时间；
-        //系统异常时，记录异常日志
-        //业务系统封装日志的类，不需要包含服务器信息，不需要包含用户信息，会自动采集
-
-        //记录系统启动日志
-        static void WriteServerStartupLog()
-        {
-            string detail = string.Format("服务器启动，操作系统为{0}，IIS版本为{1}，.NET CLR为{2}", ClientServerInfo.ServerInfo.GetServerOS(), ClientServerInfo.ServerInfo.GetIISVerson(), ClientServerInfo.ServerInfo.GetCLRVersion());
-            Log_OperateTraceBllEdm start = new Log_OperateTraceBllEdm()
-            {
-                Detail = detail,
-                LogType = LogType.启动,
-                Remark = "启动时间" + DateTime.Now,
-            };
-            WriteLog(start);
         }
 
         /// <summary>
@@ -470,32 +418,13 @@ namespace Log2Net
             }
             //写到自定义日志中
             string detail = string.Format("服务器停止，停止原因为[{0}]，运行时长{1}", shutDownMessageShort, ClientServerInfo.ServerInfo.GetRunningTime());
-            Log_OperateTraceBllEdm stop = new Log_OperateTraceBllEdm()
+            LogTraceEdm stop = new LogTraceEdm()
             {
                 Detail = detail,
                 LogType = LogType.停止,
                 Remark = "停止时间" + DateTime.Now,
             };
             WriteLog(stop);
-        }
-
-        /// <summary>
-        /// 获取用户自定义的系统名称
-        /// </summary>
-        public static Dictionary<SysCategory, string> GetLogWebApplicationsName()
-        {
-            List<KVEdm> kVEdms = Log2NetConfig.GetSectionVal("userSystemNames");
-            if (kVEdms.Count > 0)
-            {
-                Dictionary<SysCategory, string> dic = kVEdms.ToDictionary(k => StringEnum.GetEnumValue<SysCategory>(k.Key), v => v.Value);
-                return dic;
-            }
-            else
-            {
-                var enumDic = StringEnum.GetDicFromEnumType(new SysCategory());
-                return enumDic.ToDictionary(k => (SysCategory)k.Value, v => v.Key);
-            }
-
         }
 
 #if NET
@@ -517,7 +446,6 @@ namespace Log2Net
             VisitOnline.VisitCountFactory.GetInstance().GetSetApplicationValue(AppKey.OnLineUserCnt, VisitOnline.VOAction.Sub1);
         }
 
-
         /// <summary>
         /// 记录初次访问日志
         /// </summary>
@@ -535,7 +463,7 @@ namespace Log2Net
             lock (lockObj)
             {
                 string detail = string.Format("服务器(IIS版本{0})启动后，初次被访问", ClientServerInfo.ServerInfo.GetIISVerson());
-                Log_OperateTraceBllEdm first = new Log_OperateTraceBllEdm()
+                LogTraceEdm first = new LogTraceEdm()
                 {
                     Detail = detail,
                     LogType = LogType.初次访问,
@@ -549,7 +477,6 @@ namespace Log2Net
 
         }
 
-
         /// <summary>
         /// .NET平台处理异常情况：先写日志再清除异常
         /// </summary>
@@ -562,7 +489,7 @@ namespace Log2Net
                 Exception ex = System.Web.HttpContext.Current.Server.GetLastError().GetBaseException();
                 string serMsg = string.Format("服务器环境：操作系统{0}，IIS版本[{1}]，.Net CLR版本[{2}]，运行时长[{3}]", ClientServerInfo.ServerInfo.GetServerOS(), ClientServerInfo.ServerInfo.GetIISVerson(), ClientServerInfo.ServerInfo.GetCLRVersion(), ClientServerInfo.ServerInfo.GetRunningTime());
                 string detail = string.Format("URl：{0}\n引发异常的方法：{1}\n错误信息：{2}\n错误堆栈：{3}\n{4}", System.Web.HttpContext.Current.Request.RawUrl, ex.TargetSite, ex.Message, ex.StackTrace, serMsg);
-                Log_OperateTraceBllEdm exLog = new Log_OperateTraceBllEdm()
+                LogTraceEdm exLog = new LogTraceEdm()
                 {
                     Detail = detail,
                     LogType = LogType.异常,
@@ -641,39 +568,383 @@ namespace Log2Net
 
 #endif
 
-        /// <summary>
-        /// 将信息写入到文件中，主要记录调试信息但又不想记录到日志中的信息（可通过WebConfig的bWriteInfoToDebugFile 配置项开启关闭之）
-        /// </summary>
-        /// <typeparam name="T">泛型类，可使用匿名类型</typeparam>
-        /// <param name="model"></param>
-        public static void WriteMsgToDebugFile<T>(T model)
+        #endregion 对外公开的方法
+
+
+        #region 私有方法  
+        static string WriteLog(params LogTraceEdm[] model)
         {
-            if (Log2NetConfig.GetConfigVal("bWriteInfoToDebugFile") != "1")
+            if (model == null || model.Length <= 0)
+            {
+                return "";
+            }
+            try
+            {
+                List<Log_OperateTrace> list = new List<Log_OperateTrace>();
+                foreach (var item in model)
+                {
+                    Log_OperateTraceR cur = new Log_OperateTraceR()
+                    {
+                        Detail = item.Detail,
+                        LogType = item.LogType,
+                        Remark = item.Remark,
+                        TabOrModu = item.TabOrModu,
+                        UserID = !string.IsNullOrEmpty(item.UserId) ? item.UserId : item.UserName,
+                        UserName = !string.IsNullOrEmpty(item.UserName) ? item.UserName : item.UserId,
+                    };
+                    Log_OperateTrace log_OperateTrace = //AutoMapperExtension.MapTo<Log_OperateTrace>(cur);
+                    AutoMapperConfig.GetLog_OperateTraceModel(cur);
+                    list.Add(log_OperateTrace);
+                }
+
+                appender.WriteLogAndHandFail(list);
+                // SendLogToQueue(list, MQType.TraceLog);
+            }
+            catch (Exception ex)
+            {
+                if (ex.InnerException != null)
+                {
+                    throw ex.InnerException;
+                }
+                throw ex;
+            }
+            return "";
+        }
+
+        static string WriteLog(params LogMonitorEdm[] model)
+        {
+            if (model == null || model.Length <= 0)
+            {
+                return "";
+            }
+
+            try
+            {
+                List<Log_SystemMonitorMQ> list = new List<Log_SystemMonitorMQ>();
+                foreach (var item in model)
+                {
+                    Log_SystemMonitorR cur = new Log_SystemMonitorR()
+                    {
+                        Remark = item.Remark,
+                        PageViewNumR = XmlSerializeHelper.ToSqlXml(item.PagesView),
+                    };
+                    Log_SystemMonitorMQ log_SystemMonitorMQ = AutoMapperConfig.GetLog_SystemMonitorMQModel(cur);
+
+                    list.Add(log_SystemMonitorMQ);
+                }
+                appender.WriteLogAndHandFail(list);
+
+            }
+            catch (Exception ex)
+            {
+                if (ex.InnerException != null)
+                {
+                    throw ex.InnerException;
+                }
+                throw ex;
+            }
+            return "";
+        }
+
+        static Dictionary<SysCategory, string> GetLogWebApplicationsNameFromFile()
+        {
+            List<KVEdm> kVEdms = Log2NetConfig.GetSectionVal("userSystemNames");
+            if (kVEdms.Count > 0)
+            {
+                Dictionary<SysCategory, string> dic = kVEdms.ToDictionary(k => StringEnum.GetEnumValue<SysCategory>(k.Key), v => v.Value);
+                return dic;
+            }
+            else
+            {
+                var enumDic = StringEnum.GetDicFromEnumType(new SysCategory());
+                return enumDic.ToDictionary(k => (SysCategory)k.Value, v => v.Key);
+            }
+        }
+
+        //开启定时任务，写监控日志
+        static void WriteMonitorLogThread()
+        {
+            int sleepMillSec = 600000;//10分钟
+            try
+            {
+                int sleepMillSecTemp = AppConfig.GetFinalConfig("logMonitorIntervalMins", 10, LogApi.GetLogMonitorIntervalMins()) * 60000;
+                if (sleepMillSecTemp > 0)
+                {
+                    sleepMillSec = sleepMillSecTemp;
+                }
+            }
+            catch
+            {
+
+            }
+            if (sleepMillSec <= 0)
             {
                 return;
             }
-            var typeName = typeof(T).Name;
-            if (typeName == "<>f__AnonymousType1`1")
+
+            int num = 0;
+            Thread thread = new Thread(() =>
+            //     thread = new Thread(new ThreadStart(() =>
             {
-                typeName = "AnonymousType";
-            }
-            typeName = "DebugLog";
-            WriteModelToFile(model, typeName, FileType.Debug);
+                Thread.Sleep(1000 * 30);
+                while (true)
+                {
+                    try
+                    {
+                        num++;
+                        LogMonitorEdm monitor = new LogMonitorEdm() { Remark = "定时监控" };
+                        WriteLog(monitor);
+                        WriteModelToFileForDebug(new { 内容 = DateTime.Now.ToString("HH:mm:ss.fff") + " , 第" + num + "次记录监控日志" });
+                    }
+                    catch
+                    {
+
+                    }
+                    finally
+                    {
+                        Thread.Sleep(sleepMillSec);
+
+                    }
+
+                }
+            });
+            thread.IsBackground = true;
+            thread.Priority = ThreadPriority.AboveNormal;
+            thread.Start();
+            LogTraceEdm logModel = new LogTraceEdm() { Detail = "定时监控服务启动，服务执行周期为" + (sleepMillSec / 60000.0) + "分钟" };
+            WriteLog(logModel);
         }
 
-
-        /// <summary>
-        /// 将日记写到本地文件中，记录一些重要但又不必写入log日志媒介的信息
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="model"></param>
-        /// <param name="mqType"></param>
-        /// <returns></returns>
-        //将日志保存到文件中
-        internal static ExeResEdm WriteInfoToFile<T>(T model)
+        //开启线程，将备份日志写到Appender中
+        static void StartThreadToWriteFileToAppender()
         {
-            return WriteModelToFile(model, "Info", FileType.Info);
+            Thread thread = new Thread(() =>
+            //     thread = new Thread(new ThreadStart(() =>
+            {
+                Thread.Sleep(1000 * 60);
+                while (true)
+                {
+                    try
+                    {
+                        ReadBackupLogInFileToAppender();
+                    }
+                    catch //(Exception ex)
+                    {
+                        //throw ex;//不能让日志系统的异常导致整个系统的崩溃
+                    }
+                    finally
+                    {
+                        Thread.Sleep(logReadThreadSleepNum * 1000); //10秒
+                    }
+
+                }
+            });
+            thread.IsBackground = true;
+            thread.Priority = ThreadPriority.AboveNormal;
+            thread.Start();
+            LogTraceEdm logModel = new LogTraceEdm() { Detail = "读备份日志服务启动，服务执行周期为" + logReadThreadSleepNum + "秒" };
+            // new MyLogApp().
+            WriteLog(LogLevel.Info, logModel);
         }
+
+        //将文件中的日志备份数据写入到Appender中
+        static void ReadBackupLogInFileToAppender()
+        {
+            string path = GetWholeFolderPath(FileType.Backup);
+            if (!Directory.Exists(path))
+            {
+                return;
+            }
+            string[] allFiles = Directory.GetFiles(path, "*.log");
+            List<int> errIndex = new List<int>();
+            for (int i = 0; i < allFiles.Length; i++)
+            {
+                if (errIndex.Count >= 2 && errIndex[0] == 0 && errIndex[1] == 1)//连续两个失败，则退出
+                {
+                    logReadThreadSleepNum *= 2;//循环时间延长
+                    if (allFiles.Length > logBackupWarnNum)
+                    {
+                        logReadThreadSleepNum *= 10;//循环时间延长         
+                        throw new Exception("系统中备份的日志数据已达到【" + allFiles.Length + "】条，请确认日志收集系统的队列服务工作正常。");
+                    }
+                    break;
+                }
+                var item = allFiles[i];
+                var curText = System.IO.File.ReadAllText(item);
+                object model = null;
+                var bOK = false;
+
+                if (item.Contains("_" + MQType.MonitorLog.ToString() + ".log"))
+                {
+                    model = SerializerHelper.DeserializeToObject<Log_SystemMonitorMQ>(curText);   //不能是Log_SystemMonitorR
+                    bOK = appender.WriteLogAgain(model);
+                }
+                else if (item.Contains("_" + MQType.TraceLog.ToString() + ".log") || item.Contains("_" + MQType.TraceLogEx.ToString() + ".log"))
+                {
+                    model = SerializerHelper.DeserializeToObject<Log_OperateTrace>(curText);  //不能是Log_OperateTraceR
+                    bOK = appender.WriteLogAgain(model);
+                }
+
+                if (bOK)
+                {
+                    System.IO.File.Delete(item);
+                    Thread.Sleep(500);
+                }
+                else
+                {
+                    errIndex.Add(i);
+                    Thread.Sleep(5000);
+                }
+
+            }
+        }
+
+        //记录系统启动日志
+        static void WriteServerStartupLog()
+        {
+#if NET
+            string vsVer = ".Net";
+#else
+            string vsVer = ".Net Core";
+#endif
+            string detail = string.Format("服务器启动，操作系统为{0}，IIS版本为{1}，.NET CLR为{2}，开发框架为{3}", ClientServerInfo.ServerInfo.GetServerOS(), ClientServerInfo.ServerInfo.GetIISVerson(), ClientServerInfo.ServerInfo.GetCLRVersion(), vsVer);
+            LogTraceEdm start = new LogTraceEdm()
+            {
+                Detail = detail,
+                LogType = LogType.启动,
+                Remark = "启动时间" + DateTime.Now,
+            };
+            WriteLog(start);
+        }
+
+        #endregion 私有方法
+
+
+
+        #region 获取代码中进行的配置
+
+        //获取用户代码中的配置
+        static UserCfg GetUserConfigItem()
+        {
+            UserCfg userCfg = new HttpCacheHelper().GetCache(AppConfig.GetCacheKey(CacheConst.userCfgInCode)) as UserCfg;
+            return userCfg;
+        }
+
+        internal static LogLevel GetLog2NetLevel()
+        {
+            return userCfg.LogLevel;
+        }
+
+        internal static LogAppendType GetLogAppendType()
+        {
+            return userCfg.LogAppendType;
+        }
+
+        internal static int GetLogMonitorIntervalMins()
+        {
+            return userCfg.LogMonitorIntervalMins;
+        }
+
+        internal static bool IsWriteInfoToDebugFile()
+        {
+            return userCfg.IsWriteInfoToDebugFile;
+        }
+
+        internal static string GetLogToFilePath()
+        {
+            return userCfg.LogToFilePath;
+        }
+
+        internal static DBAccessType GetDBAccessType()
+        {
+            return userCfg.DBAccessType;
+        }
+
+        internal static DataBaseType GetUserCfg_TraceDBTypeKey()
+        {
+            return userCfg.TraceDataBaseType;
+        }
+
+        internal static DataBaseType GetUserCfg_MonitorDBTypeKey()
+        {
+            return userCfg.MonitorDataBaseType;
+        }
+
+        internal static string GetUserCfg_TraceDBConKey()
+        {
+            return userCfg.TraceDBConKey;
+        }
+
+        internal static string GetUserCfg_MonitorDBConKey()
+        {
+            return userCfg.MonitorDBConKey;
+        }
+
+        internal static bool IsInitTraceDBWhenOracle()
+        {
+            return userCfg.IsInitTraceDBWhenOracle;
+        }
+
+        internal static bool IsInitMonitorDBWhenOracle()
+        {
+            return userCfg.IsInitMonitorDBWhenOracle;
+        }
+
+        internal static OracleDriverType GetOracleDriverType()
+        {
+            return userCfg.OracleDriverType;
+        }
+
+        internal static string GetRabbitMQServer_Log()
+        {
+            return userCfg.RabbitMQServer;
+        }
+
+        internal static bool IsWriteToInfluxDB()
+        {
+            return userCfg.IsWriteToInfluxDB;
+        }
+
+        internal static string GetInfluxDBServer_Log()
+        {
+            return userCfg.InfluxDBServer;
+        }
+
+        internal static CacheType GetCacheStrategy()
+        {
+            if (userCfg == null)
+            {
+                throw new Exception("您尚未注册Log2Net日志组件");
+            }
+            return userCfg.CacheType;
+        }
+
+        internal static string GetMemCacheServer()
+        {
+            return userCfg.MemCacheServer;
+        }
+        internal static string GetRedisCacheServer()
+        {
+            return userCfg.RedisCacheServer;
+        }
+
+        internal static bool IsConnectStrInCode()
+        {
+            return userCfg.IsConnectStrInCode;
+        }
+        //   
+        internal static string GetTraceDBConnectionString()
+        {
+            return userCfg.RedisCacheServer;
+        }
+
+        internal static string GetMonitorDBConnectionString()
+        {
+            return userCfg.RedisCacheServer;
+        }
+
+        #endregion 获取代码中进行的配置
+
 
     }
 }

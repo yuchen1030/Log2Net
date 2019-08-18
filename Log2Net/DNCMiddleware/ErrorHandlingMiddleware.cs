@@ -68,14 +68,14 @@ namespace Log2Net.DNCMiddleware
             var data = new { code = statusCode.ToString(), is_success = false, msg = msg };
             var result = JsonConvert.SerializeObject(new { data = data });
 
-            Log_OperateTraceBllEdm exLog = new Log_OperateTraceBllEdm()
+            LogTraceEdm exLog = new LogTraceEdm()
             {
                 Detail = result,
                 LogType = LogType.异常,
                 Remark = "异常时间" + DateTime.Now,
                 TabOrModu = "异常模块",
             };
-            LogApi.WriteLog( LogLevel.Error,exLog);
+           // LogApi.WriteLog( LogLevel.Error,exLog);
 
             context.Response.ContentType = "application/json;charset=utf-8";
             return context.Response.WriteAsync(result);

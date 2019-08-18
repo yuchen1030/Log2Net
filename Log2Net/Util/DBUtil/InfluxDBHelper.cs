@@ -19,12 +19,10 @@ namespace Log2Net.Util
         string _dbName = "";
         static InfluxDBHelper()
         {
-            if (Log2NetConfig.GetConfigVal("bWriteToInfluxDB") == "1")
+            if (AppConfig.GetFinalConfig("bWriteToInfluxDB", false, LogApi.IsWriteToInfluxDB()) )
             {
-                string serverStr = Log2NetConfig.GetConfigVal("InfluxDBServer_Log");  //http://127.0.0.1:8086/;logAdmin;sa123.123
-                serverStr = string.IsNullOrEmpty(serverStr) || !serverStr.Contains(';') ? "http://127.0.0.1:8086/;logAdmin;sa123.123" : serverStr;
+                var serverStr = AppConfig.GetFinalConfig("InfluxDBServer_Log", "http://127.0.0.1:8086/;logAdmin;sa123.123", LogApi.GetInfluxDBServer_Log()); //http://127.0.0.1:8086/;logAdmin;sa123.123
                 var temp = serverStr.Split(';');
-                //influxDbClient = new InfluxDbClient("http://127.0.0.1:8086/", "logAdmin", "sa123.123", InfluxDbVersion.Latest);
                 influxDbClient = new InfluxDbClient(temp[0], temp[1], temp[2], InfluxDbVersion.Latest);
             }
             else
@@ -90,7 +88,7 @@ namespace Log2Net.Util
             catch (Exception ex)
             {
 
-                LogCom. WriteExceptToFile(ex, "InfluxDBHelper.WriteData");
+                LogCom.WriteExceptToFile(ex, "InfluxDBHelper.WriteData");
                 return false;
             }
 

@@ -1,6 +1,9 @@
 ﻿
+#define netCore
+
 using Log2Net.Models;
 using Log2Net.Util;
+using Microsoft.Net.Http.Headers;
 using Microsoft.Win32;
 using System;
 using System.Collections.Generic;
@@ -69,8 +72,8 @@ namespace Log2Net.LogInfo
                     var httpContext = HttpContext.Current;
                     if (httpContext == null || httpContext.Request == null)
                     {
-                         return new IPHost() { IP = uip, Host = uName };
-                    }             
+                        return new IPHost() { IP = uip, Host = uName };
+                    }
                     var apaddr = httpContext.Connection.RemoteIpAddress;
                     uip = apaddr.ToString(); //获取客户端的IP主机地址
 #endif
@@ -136,14 +139,19 @@ namespace Log2Net.LogInfo
                 return regex.IsMatch(ipAddress);
             }
 
-            // 获取浏览器信息  
-            public static string GetOSInfo()
+            // 获取用户操作系统/浏览器信息  
+            public static string GetUserAgentInfo()
             {
+                var browsers = HttpContext.Current.Request.Headers[HeaderNames.UserAgent].ToString();
+                var languages = HttpContext.Current.Request.Headers[HeaderNames.AcceptLanguage].ToString();
+                return "操作系统和浏览器为：" + browsers + " ,语言为：" + languages;
 #if NET
                 var bc = System.Web.HttpContext.Current.Request.Browser;
                 return "操作系统为" + bc.Platform + " ,浏览器类型为" + bc.Type;
 #else
-                return "操作系统为" + "未知" + " ,浏览器类型为" + "未知";
+                var browser = HttpContext.Current.Request.Headers[HeaderNames.UserAgent].ToString();
+                var language = HttpContext.Current.Request.Headers[HeaderNames.AcceptLanguage].ToString();
+                return "操作系统和浏览器为：" + browser + " ,语言为" + language;
 #endif
             }
 
@@ -261,7 +269,8 @@ namespace Log2Net.LogInfo
 #if NET
                 return GetVersonStr(System.Web.HttpRuntime.IISVersion);
 #else
-                return Environment.OSVersion.ToString();
+
+                return "MS未定义";
 #endif
 
             }
@@ -274,6 +283,7 @@ namespace Log2Net.LogInfo
             //获取服务器 .NET CLR版本
             public static string GetCLRVersion()
             {
+                var ttt = Environment.Version.ToString();
                 return GetVersonStr(Environment.Version);
             }
 

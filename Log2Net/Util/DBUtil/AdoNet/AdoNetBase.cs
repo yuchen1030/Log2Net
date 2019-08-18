@@ -69,6 +69,7 @@ namespace Log2Net.Util.DBUtil.AdoNet
             string whereSql = !string.IsNullOrEmpty(para.StrWhere) ? para.StrWhere : LambdaToSqlHelper<T>.GetWhereFromLambda(para.Filter, DataBaseType.NoSelect);
             SearchParam searchParam = new SearchParam() { Orderby = orderByStr, PageIndex = para.PageIndex, PageSize = para.PageSize, TableName = tableName, StrWhere = whereSql, };
             ExeResEdm res = GetDTByPage(searchParam);
+            para.StrWhere = whereSql;
             if (res.ErrCode == 0)
             {
                 List<T> list = DtModelConvert<T>.DatatableToList((res.ExeModel as DataTable));

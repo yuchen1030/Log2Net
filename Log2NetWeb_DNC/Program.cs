@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 
-namespace Log2NetWeb
+namespace Log2NetWeb_DNC
 {
     public class Program
     {

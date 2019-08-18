@@ -14,7 +14,7 @@ namespace Log2Net.DNCMiddleware
 {
 
 
-    internal static class HttpContext
+    public static class HttpContext
     {
         public class SessionEdm
         {
@@ -36,8 +36,8 @@ namespace Log2Net.DNCMiddleware
             _accessor = accessor;
         }
 
-        public static VOEdm GetOnlineVisitNum(int preVisitNum)
-        {          
+        internal static VOEdm GetOnlineVisitNum(int preVisitNum)
+        {
             if (_accessor.HttpContext != null)
             {
                 var curSession = _accessor.HttpContext.Session;
@@ -72,9 +72,17 @@ namespace Log2Net.DNCMiddleware
 
         public static IApplicationBuilder UseStaticHttpContext(this IApplicationBuilder app)
         {
-            var httpContextAccessor = app.ApplicationServices.GetRequiredService<IHttpContextAccessor>();
-            HttpContext.Configure(httpContextAccessor);
-            return app;
+            try
+            {
+                var httpContextAccessor = app.ApplicationServices.GetRequiredService<IHttpContextAccessor>();
+                HttpContext.Configure(httpContextAccessor);
+                return app;
+            }
+            catch(Exception ex)
+            {
+                throw new Exception("请确保您已注册了Log2netService");
+            }
+
         }
     }
 

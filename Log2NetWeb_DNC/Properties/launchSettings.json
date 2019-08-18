@@ -15,7 +15,7 @@
         "ASPNETCORE_ENVIRONMENT": "Development"
       }
     },
-    "Log2NetWeb": {
+    "Log2NetWeb_DNC": {
       "commandName": "Project",
       "launchBrowser": true,
       "environmentVariables": {

@@ -1,4 +1,4 @@
-﻿using Log2Net.Config;
+﻿using Log2Net.LogInfo;
 using Log2Net.Models;
 using Log2Net.Util.DBUtil.Models;
 using System;
@@ -42,9 +42,17 @@ namespace Log2Net.Util.DBUtil
         //获取数据库连接字符串
         public static string GetConnectionString(DBType dbType)
         {
-            string sqlStrKey = GetConnectionStringKey(dbType);         
-            string conStr = AppConfig.GetDBConnectString(sqlStrKey);
-            return conStr;
+            if (AppConfig.GetFinalConfig("ConnectStrIsInCode", false, LogApi.IsConnectStrInCode()))
+            {
+                return dbType == DBType.LogTrace ? LogApi.GetTraceDBConnectionString() : LogApi.GetMonitorDBConnectionString();
+            }
+            else
+            {
+                string sqlStrKey = GetConnectionStringKey(dbType);
+                string conStr = AppConfig.GetDBConnectString(sqlStrKey);
+                return conStr;
+            }
+
         }
 
         //获取数据库连接字符串的key
@@ -54,12 +62,10 @@ namespace Log2Net.Util.DBUtil
             switch (dbType)
             {
                 case DBType.LogTrace:
-                    var userTraceCfg = Log2NetConfig.GetConfigVal("UserCfg_TraceDBConKey");
-                    sqlStrKey = string.IsNullOrEmpty(userTraceCfg) ? "logTraceSqlStr" : userTraceCfg;
+                    sqlStrKey = AppConfig.GetFinalConfig("UserCfg_TraceDBConKey", "logTraceSqlStr", LogApi.GetUserCfg_TraceDBConKey());
                     break;
                 case DBType.LogMonitor:
-                    var userMonitorCfg = Log2NetConfig.GetConfigVal("UserCfg_MonitorDBConKey");
-                    sqlStrKey = string.IsNullOrEmpty(userMonitorCfg) ? "logMonitorSqlStr" : userMonitorCfg;
+                    sqlStrKey = AppConfig.GetFinalConfig("UserCfg_MonitorDBConKey", "logMonitorSqlStr", LogApi.GetUserCfg_MonitorDBConKey());
                     break;
             }
             return sqlStrKey;
@@ -74,10 +80,17 @@ namespace Log2Net.Util.DBUtil
             {
                 return DBGeneralDic[dbType];
             }
-            var cfgKey = dbType == DBType.LogTrace ? "UserCfg_TraceDBTypeKey" : "UserCfg_MonitorDBTypeKey";
-            var typeStr = Log2NetConfig.GetConfigVal(cfgKey);
+
             DataBaseType curDBType = DataBaseType.SqlServer;
-            try { curDBType = StringEnum.GetEnumValue<DataBaseType>(typeStr); } catch { }
+            if (dbType == DBType.LogTrace)
+            {
+                curDBType = AppConfig.GetFinalConfig("UserCfg_TraceDBTypeKey", DataBaseType.SqlServer, LogApi.GetUserCfg_TraceDBTypeKey());
+            }
+            else
+            {
+                curDBType = AppConfig.GetFinalConfig("UserCfg_MonitorDBTypeKey", DataBaseType.SqlServer, LogApi.GetUserCfg_MonitorDBTypeKey());
+            }
+
             DBGeneral dBGeneral = new DBGeneral() { DataBaseType = curDBType };
 
             if (curDBType == DataBaseType.SqlServer)
@@ -90,11 +103,11 @@ namespace Log2Net.Util.DBUtil
             }
             else if (curDBType == DataBaseType.MySql)
             {
-               // dBGeneral.SchemaName = "";
+                // dBGeneral.SchemaName = "";
             }
             DBGeneralDic.Add(dbType, dBGeneral);
-            string msg = dbType.ToString() + "的数据库类型为【" + dBGeneral.DataBaseType.ToString() + "】" ;
-            LogApi.WriteMsgToDebugFile(new { 内容 = msg });
+            string msg = dbType.ToString() + "的数据库类型为【" + dBGeneral.DataBaseType.ToString() + "】";
+            LogCom.WriteModelToFileForDebug(new { 内容 = msg });
             return dBGeneral;
         }
 
@@ -145,7 +158,7 @@ namespace Log2Net.Util.DBUtil
                     string[] values = kvDic[0][colNames[i]].ToString().Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
                     for (int j = 0; j < values.Length; j++)
                     {
-                        result += (leftPre + colNames[i] + rightSuf + "=" + paraChar + RemoveSpecialChar(colNames[i]) + j);
+                        result += (leftPre + colNames[i] + rightSuf + "=" + paraChar + RemoveSpecialChar(colNames[i]) /*+ j*/);
                         if (j != values.Length - 1)
                         {
                             result += " " + and_or + " ";

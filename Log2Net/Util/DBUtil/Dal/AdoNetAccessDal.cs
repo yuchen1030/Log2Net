@@ -1,38 +1,31 @@
-﻿using Log2Net.Models;
+﻿using Log2Net.LogInfo;
+using Log2Net.Models;
 using Log2Net.Util.DBUtil.AdoNet;
 using Log2Net.Util.DBUtil.AdoNet.Oracle;
-using Log2Net.Util.DBUtil.Dal;
 using Log2Net.Util.DBUtil.Models;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace Log2Net.Util.DBUtil.Dal
 {
 
-
     class Log_OperateTraceAdoDal : AdoNetBaseDal<Log_OperateTrace>
     {
-        protected override DataBaseType CurDatabaseType
+        protected override CurrentDalParas CurDalParas
         {
             get
             {
-                var dbGeneral = ComDBFun.GetDBGeneralInfo(DBType.LogTrace);
-                return dbGeneral.DataBaseType;
+                var curDBType = DBType.LogTrace;
+                return new CurrentDalParas()
+                {
+                    DBType = curDBType,
+                    CurDatabaseType = ComDBFun.GetDBGeneralInfo(curDBType).DataBaseType,
+                    TableName = "Log_OperateTrace",
+                    PrimaryKey = "Id",
+                    SkipCols = new string[] { "Id" },
+                    Orderby = "Id",
+                };
             }
-            // set { typeStr = value; }
-        }
-
-        protected override void SetCurretnDalParas()
-        {
-            CurDalParas = new AdoNetBaseDal<Log_OperateTrace>.CurrentDalParas()
-            {
-                DBType = DBType.LogTrace,
-                TableName = "Log_OperateTrace",
-                PrimaryKey = "Id",
-                SkipCols = new string[] { "Id" },
-                Orderby = "Id",
-            };
         }
 
     }
@@ -40,39 +33,30 @@ namespace Log2Net.Util.DBUtil.Dal
 
     class Log_SystemMonitorAdoDal : AdoNetBaseDal<Log_SystemMonitor>
     {
-        protected override DataBaseType CurDatabaseType
+        protected override CurrentDalParas CurDalParas
         {
             get
             {
-                var dbGeneral = ComDBFun.GetDBGeneralInfo(DBType.LogMonitor);
-                return dbGeneral.DataBaseType;
+                var curDBType = DBType.LogMonitor;
+                return new CurrentDalParas()
+                {
+                    DBType = curDBType,
+                    CurDatabaseType = ComDBFun.GetDBGeneralInfo(curDBType).DataBaseType,
+                    TableName = "Log_SystemMonitor",
+                    PrimaryKey = "Id",
+                    SkipCols = new string[] { "Id" },
+                    Orderby = "Id",
+                };
             }
-            // set { typeStr = value; }
-        }
-
-
-        protected override void SetCurretnDalParas()
-        {
-
-            CurDalParas = new AdoNetBaseDal<Log_SystemMonitor>.CurrentDalParas()
-            {
-                DBType = DBType.LogMonitor,
-                TableName = "Log_SystemMonitor",
-                PrimaryKey = "Id",
-                SkipCols = new string[] { "Id" },
-                Orderby = "Id",
-            };
         }
 
     }
 
 
-    internal abstract class AdoNetBaseDal<T> : DBAccessDal<T> where T : class
+    internal abstract class AdoNetBaseDal<T> : IDBAccessDal<T> where T : class
     {
-
         public AdoNetBaseDal()
         {
-            SetCurretnDalParas();
             tableName = CurDalParas.TableName;
             primaryKey = CurDalParas.PrimaryKey;
             skipCols = CurDalParas.SkipCols;
@@ -83,19 +67,21 @@ namespace Log2Net.Util.DBUtil.Dal
             GetBaseDBByDBType();
         }
 
+        protected abstract CurrentDalParas CurDalParas { get; }//抽象属性，要求子类必须实现
+
         string tableName = "";
         string primaryKey = "";
         string[] skipCols = new string[] { "" };
         List<string> updateKeys = new List<string>() { "" };
         List<string> deleteKeys = new List<string>() { "" };
         string orderby = "";
-
         string conStr = "";
         IAdoNetBase<T> baseDB = null;
 
         internal struct CurrentDalParas
         {
             public DBType DBType { get; set; }
+            public DataBaseType CurDatabaseType { get; set; }
 
             public string TableName { get; set; }
 
@@ -117,7 +103,7 @@ namespace Log2Net.Util.DBUtil.Dal
             bool bOK = false;
             try
             {
-                DataBaseType dataBaseType = CurDatabaseType;
+                DataBaseType dataBaseType = CurDalParas.CurDatabaseType;
                 switch (dataBaseType)
                 {
                     case DataBaseType.SqlServer:
@@ -139,34 +125,27 @@ namespace Log2Net.Util.DBUtil.Dal
             }
             if (!bOK || baseDB == null)
             {
-                string msg = "您配置" + typeof(T).Name + "的数据库类型为【" + CurDatabaseType.ToString() + "】，但代码中尚未实现。";
-                LogApi.WriteMsgToDebugFile(new { 内容 = msg });
+                string msg = "您配置" + typeof(T).Name + "的数据库类型为【" + CurDalParas.CurDatabaseType.ToString() + "】，但代码中尚未实现。";
+                LogCom.WriteModelToFileForDebug(new { 内容 = msg });
                 throw new Exception(msg);
             }
 
         }
 
-        internal CurrentDalParas CurDalParas = new CurrentDalParas();
 
-        protected abstract void SetCurretnDalParas();//抽象类，要求子类必须实现
-
-        protected abstract DataBaseType CurDatabaseType { get; }
-
-        internal override ExeResEdm  GetAll(PageSerach<T> para)
+        public ExeResEdm GetAll(PageSerach<T> para)
         {
             var data = baseDB.GetListByPage(tableName, para);
             return data;
-
-
         }
 
         //添加数据
-        internal override ExeResEdm Add(AddDBPara<T> dBPara)
+        public ExeResEdm Add(AddDBPara<T> dBPara)
         {
             return baseDB.Add(tableName, dBPara.Model, skipCols);
         }
 
-                              
+
     }
 
 

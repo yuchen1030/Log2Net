@@ -9,6 +9,8 @@ namespace Log2Net.Config
 
 #if NET
 
+    //用法：<section name="log2netCfg" type="Log2Net.Config.Log2NetConfigurationSectionHandler, Log2Net" /> 。
+    //注意: 此处section name 的值必须跟 Log2NetCfg.config 中保持一致；本组件中默认为 log2netCfg。
     public class Log2NetConfigurationSectionHandler : System.Configuration.IConfigurationSectionHandler
     {
         public object Create(object parent, object configContext, XmlNode section)
@@ -84,13 +86,16 @@ namespace Log2Net.Config
             try
             {
 #if NET
-                var values = System.Configuration.ConfigurationManager.GetSection("log2netCfg") as List<KVEdm>;
+                var values = System.Configuration.ConfigurationManager.GetSection(GetLog2netCfgSectionName()) as List<KVEdm>;
                 return values.Where(a => string.Equals(a.Key, key.Trim(), StringComparison.OrdinalIgnoreCase)).FirstOrDefault().Value.Trim();
 #else
                 return AppConfig.GetConfigValue(key);
 #endif
             }
-            catch { return ""; }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
         }
 
 
@@ -104,7 +109,7 @@ namespace Log2Net.Config
             try
             {
 #if NET
-                var values = System.Configuration.ConfigurationManager.GetSection("log2netCfg") as List<KVEdm>;
+                var values = System.Configuration.ConfigurationManager.GetSection(GetLog2netCfgSectionName()) as List<KVEdm>;
                 string secFlag = sectionKey + ".";
                 var secKVs = values.Where(a => a.Key.StartsWith(secFlag, StringComparison.OrdinalIgnoreCase)).Select(a => new KVEdm() { Key = a.Key.Substring(secFlag.Length), Value = a.Value }).ToList();
                 return secKVs;
@@ -117,6 +122,17 @@ namespace Log2Net.Config
             catch { return kv; }
         }
 
+
+
+#if NET
+        static string GetLog2netCfgSectionName()
+        {
+            string name = System.Configuration.ConfigurationManager.AppSettings["log2netCfgSectionName"];
+            name = string.IsNullOrEmpty(name) ? "log2netCfg" : name;
+            return name;
+        }
+
+#endif
 
     }
 }

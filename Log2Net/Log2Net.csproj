@@ -8,16 +8,25 @@
   </PropertyGroup>
 
   <PropertyGroup>
+    
+    <Version>1.0.6</Version>
+    
     <TargetFrameworks>net45;net451;net452;net46;net461;net462;net47;net471;net472;netcoreapp2.0;netcoreapp2.1</TargetFrameworks>
-    <Authors>Log2Net WorkGroup</Authors>
-    <ProjectUrl>https://github.com/yuchen1030/Log2Net</ProjectUrl>
-    <IconUrl>https://raw.githubusercontent.com/yuchen1030/Log2Net/master/Resource/Icon/Log2Net64.ico</IconUrl>
-    <Tags>log, logfiles, logging, tracing</Tags>
+
     <Description>Log2NET is a tool for collecting log to databases or files for .NET and .NETCore.
-    This component automatically collects the system's running logs (server operation, online statistics, etc.), exception logs. programmers can also add custom logs.
-    This component supports.NET platform and.NETCore platform, supports file, sql server, oracle, mysql, and can be easily extended to other databases.
-    </Description>
-    <Version>1.0.0</Version>
+This component automatically collects the system's running logs (server operation, online statistics, etc.), exception logs. programmers can also add custom logs.
+This component supports.NET platform and.NETCore platform, supports file, sql server, oracle, mysql, and can be easily extended to other databases.</Description>
+    
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <Authors>Log2Net WorkGroup</Authors>    
+    <PackageProjectUrl>https://github.com/yuchen1030/Log2Net</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/yuchen1030/Log2Net</RepositoryUrl>
+    <PackageTags>log, logfiles, logging, tracing</PackageTags>
+    <PackageIconUrl>https://raw.githubusercontent.com/yuchen1030/Log2Net/master/Resource/Icon/Log2Net64.ico</PackageIconUrl>
+    <RepositoryType>github</RepositoryType>
+    <PackageReleaseNotes>No strongly named version.</PackageReleaseNotes>
+    <!--<SignAssembly>true</SignAssembly>-->
+    <!--<AssemblyOriginatorKeyFile>Log2NetSnk.pfx</AssemblyOriginatorKeyFile>-->
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(TargetFramework)' == 'net45' OR '$(TargetFramework)' == 'net451'  OR '$(TargetFramework)' == 'net452' OR '$(TargetFramework)'== 'net46' OR '$(TargetFramework)' == 'net461' OR '$(TargetFramework)' == 'net462'  OR '$(TargetFramework)'== 'net47' OR '$(TargetFramework)' == 'net471' OR '$(TargetFramework)' == 'net472'">
@@ -77,6 +86,12 @@
 
   <ItemGroup>
     <Folder Include="Util\DBUtil\Dal\EFDal\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="Microsoft.Net.Http.Headers">
+      <HintPath>..\..\..\..\..\..\Program Files\dotnet\sdk\NuGetFallbackFolder\microsoft.net.http.headers\2.1.1\lib\netstandard2.0\Microsoft.Net.Http.Headers.dll</HintPath>
+    </Reference>
   </ItemGroup>
 
 

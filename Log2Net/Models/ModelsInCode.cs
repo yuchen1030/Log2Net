@@ -44,6 +44,7 @@ namespace Log2Net.Models
         serverHost,
         systemName,
         firstRequest,
+        userCfgInCode,
     }
 
     public enum MQType
@@ -74,6 +75,17 @@ namespace Log2Net.Models
         SQLite = 6,//realize by xxx on yyyyMMdd
     }
 
+
+    /// <summary>
+    /// 访问数据库的方式
+    /// </summary>
+    public enum DBAccessType
+    {
+        NoSelect = 0,
+        ADONET = 1,
+        EF = 2,
+        NH = 3,//TBD
+    }
 
     public enum AppKey
     {

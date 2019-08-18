@@ -91,7 +91,7 @@ namespace Log2Net.Config
         #region RabbitMQ初始化配置（静态）
         static void GetInitConfig()
         {
-            string serverStr = Log2NetConfig.GetConfigVal("RabbitMQServer_Log"); 
+            var serverStr = AppConfig.GetFinalConfig("RabbitMQServer_Log", "", LogApi.GetRabbitMQServer_Log());
             serverStr = string.IsNullOrEmpty(serverStr) ? "127.0.0.1:5672;oawxAdmin1;admin123.123" : serverStr;
             if (string.IsNullOrEmpty(serverStr) || !serverStr.Contains(";") || !serverStr.Contains(":"))
             {
