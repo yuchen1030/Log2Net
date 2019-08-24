@@ -24,24 +24,62 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Icon", "Icon", "{5F691368-3
 		Resource\Icon\Log2Net64.ico = Resource\Icon\Log2Net64.ico
 	EndProjectSection
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "WebHealthCheck", "WebHealthCheck", "{F6732B72-91FB-4BB3-A5D8-C534AC2DABDE}"
+	ProjectSection(SolutionItems) = preProject
+		Resource\WebHealthCheck\Config.txt = Resource\WebHealthCheck\Config.txt
+		Resource\WebHealthCheck\硬盘占用过大时执行(双击运行).bat = Resource\WebHealthCheck\硬盘占用过大时执行(双击运行).bat
+		Resource\WebHealthCheck\磁盘占用的文件.txt = Resource\WebHealthCheck\磁盘占用的文件.txt
+	EndProjectSection
+EndProject
+Project("{911E67C6-3D85-4FCE-B560-20A9C3E3FF48}") = "WebHealthCheck", "Resource\WebHealthCheck\WebHealthCheck.exe", "{961AB9D3-DBAC-4631-B2DB-AC21F2246C3B}"
+	ProjectSection(DebuggerProjectSystem) = preProject
+		PortSupplier = 00000000-0000-0000-0000-000000000000
+		Executable = C:\Users\HP\Desktop\Log2Net_2019Apr\Log2Net\Resource\WebHealthCheck\WebHealthCheck.exe
+		RemoteMachine = ZZHP16
+		StartingDirectory = C:\Users\HP\Desktop\Log2Net_2019Apr\Log2Net\Resource\WebHealthCheck
+		Environment = 默认值
+		LaunchingEngine = 00000000-0000-0000-0000-000000000000
+		UseLegacyDebugEngines = No
+		LaunchSQLEngine = No
+		AttachLaunchAction = No
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
+		Debug|x86 = Debug|x86
 		Release|Any CPU = Release|Any CPU
+		Release|x86 = Release|x86
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{72F879F2-A6DC-4B8B-8DCA-1859223FA1D2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{72F879F2-A6DC-4B8B-8DCA-1859223FA1D2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{72F879F2-A6DC-4B8B-8DCA-1859223FA1D2}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{72F879F2-A6DC-4B8B-8DCA-1859223FA1D2}.Debug|x86.Build.0 = Debug|Any CPU
 		{72F879F2-A6DC-4B8B-8DCA-1859223FA1D2}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{72F879F2-A6DC-4B8B-8DCA-1859223FA1D2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{72F879F2-A6DC-4B8B-8DCA-1859223FA1D2}.Release|x86.ActiveCfg = Release|Any CPU
+		{72F879F2-A6DC-4B8B-8DCA-1859223FA1D2}.Release|x86.Build.0 = Release|Any CPU
 		{8762259F-70A0-4E82-BD95-787E4D6C4690}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{8762259F-70A0-4E82-BD95-787E4D6C4690}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8762259F-70A0-4E82-BD95-787E4D6C4690}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{8762259F-70A0-4E82-BD95-787E4D6C4690}.Debug|x86.Build.0 = Debug|Any CPU
 		{8762259F-70A0-4E82-BD95-787E4D6C4690}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{8762259F-70A0-4E82-BD95-787E4D6C4690}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8762259F-70A0-4E82-BD95-787E4D6C4690}.Release|x86.ActiveCfg = Release|Any CPU
+		{8762259F-70A0-4E82-BD95-787E4D6C4690}.Release|x86.Build.0 = Release|Any CPU
 		{06600000-9B49-4660-9832-B5852F8C6207}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{06600000-9B49-4660-9832-B5852F8C6207}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{06600000-9B49-4660-9832-B5852F8C6207}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{06600000-9B49-4660-9832-B5852F8C6207}.Debug|x86.Build.0 = Debug|Any CPU
 		{06600000-9B49-4660-9832-B5852F8C6207}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{06600000-9B49-4660-9832-B5852F8C6207}.Release|Any CPU.Build.0 = Release|Any CPU
+		{06600000-9B49-4660-9832-B5852F8C6207}.Release|x86.ActiveCfg = Release|Any CPU
+		{06600000-9B49-4660-9832-B5852F8C6207}.Release|x86.Build.0 = Release|Any CPU
+		{961AB9D3-DBAC-4631-B2DB-AC21F2246C3B}.Debug|Any CPU.ActiveCfg = Release|x86
+		{961AB9D3-DBAC-4631-B2DB-AC21F2246C3B}.Debug|x86.ActiveCfg = Release|x86
+		{961AB9D3-DBAC-4631-B2DB-AC21F2246C3B}.Release|Any CPU.ActiveCfg = Release|x86
+		{961AB9D3-DBAC-4631-B2DB-AC21F2246C3B}.Release|x86.ActiveCfg = Release|x86
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -49,6 +87,8 @@ Global
 	GlobalSection(NestedProjects) = preSolution
 		{B3C85D04-FB42-4D07-BF05-5DA8F7477BB9} = {0FFA1B33-2D23-479C-8FA3-53024C97DC60}
 		{5F691368-3019-45CB-821D-5BB4F17A48A9} = {0FFA1B33-2D23-479C-8FA3-53024C97DC60}
+		{F6732B72-91FB-4BB3-A5D8-C534AC2DABDE} = {0FFA1B33-2D23-479C-8FA3-53024C97DC60}
+		{961AB9D3-DBAC-4631-B2DB-AC21F2246C3B} = {F6732B72-91FB-4BB3-A5D8-C534AC2DABDE}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {DB34597F-69CB-45BD-902B-108097ECDCBF}

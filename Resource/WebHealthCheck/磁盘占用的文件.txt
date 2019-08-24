@@ -1,0 +1,7 @@
+WebHealthCheck定时运行时，会下载许多文件到以下路径下：
+C:\Windows\SysWOW64\config\systemprofile\AppData\Local\Microsoft\Windows\INetCache\IE
+
+当允许时间过长，例如半年时，会占用非常多的磁盘空间（比如100G）。
+
+解决方法：
+当磁盘空间剩余空间不足50g时，删除此文件夹下内容即可。

@@ -8,6 +8,8 @@
     "logMonitorSqlStr3": "Data Source=localhost;port=3306;Initial Catalog=LogMonitorW;user id=sa;password=sa123123;"
   },
 
+  "ConfigInWhere": 3,
+
   "userSystemNames": {
     "SysA_01": "短信接口网站",
     "201": "公司OA系统",
@@ -33,7 +35,8 @@
     "UserCfg_TraceDBTypeKey": "1",
     "UserCfg_MonitorDBTypeKey": "1",
     "UserCfg_TraceDBConKey": "logTraceSqlStr",
-    "UserCfg_MonitorDBConKey": "logMonitorSqlStr"
+    "UserCfg_MonitorDBConKey": "logMonitorSqlStr",
+    "ConnectStrIsInCode": "0"
   },
 
   "oracleCfg": {
