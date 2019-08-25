@@ -308,6 +308,16 @@ namespace Log2Net
         }
 
         /// <summary>
+        /// 获取当前在线人数和历史访客人数，第一个元素为在线人数，第二个元素为历史访客
+        /// </summary>
+        public static List<int> GetNumOfOnLineAllVisit()
+        {
+            int onLineUser = VisitOnline.VisitCountFactory.GetInstance().GetOnlineNum();
+            int allVisitUser = VisitOnline.VisitCountFactory.GetInstance().GetCurVisitorNum();
+            return new List<int>() { onLineUser, allVisitUser };
+        }
+
+        /// <summary>
         /// 写操作轨迹类日志数据
         /// </summary>
         /// <param name="model">操作轨迹类数据</param>

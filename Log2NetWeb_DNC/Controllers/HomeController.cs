@@ -34,6 +34,7 @@ namespace Log2NetWeb_DNC.Controllers
         {
             ViewData["Message"] = "Your application description page.";
             var dic = LogApi.GetLogWebApplicationsName();
+            var userCnt = LogApi.GetNumOfOnLineAllVisit();
             return View();
         }
 
