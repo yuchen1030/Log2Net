@@ -4,7 +4,7 @@ Log2Net是一个用于收集日志到数据库或文件的组件，支持.NET和
 
 该组件支持.NET平台和.NETCore平台，支持将日志写入到文本文件、SQL Server、Oracle、MySQL，可以方便地扩展到其他数据库。
 
-该组件支持直接写到数据库和通过消息队列写到数据库两种方式。读写数据库支持ADO.Net方式和EF两种方式，可以方便地扩展到NHibernate/SqlSugar/Dapper等其他方式。
+该组件支持直接写到数据库、通过普通队列写到数据库、通过Rabbit消息队列写到数据库三种方式。读写数据库支持ADO.Net方式和EF两种方式，可以方便地扩展到NHibernate/SqlSugar/Dapper等其他方式。
 
 相关博文： https://www.cnblogs.com/yuchen1030/p/10992259.html 。
 
@@ -14,4 +14,4 @@ This component automatically collects the system's running logs (server operatio
 
 This component supports.NET platform and.NETCore platform, supports file, sql server, oracle, mysql, and can be easily extended to other databases.
 
-This component supports writing directly to the database and through message queues to the database. Read-write database supports ADO. Net mode and EF mode, which can be easily extended to other modes such as NHibernate/SqlSugar/Dapper.
+This component supports writing directly to the database , through queues to the database, through rabbitmq to the database. Read-write database supports ADO. Net mode and EF mode, which can be easily extended to other modes such as NHibernate/SqlSugar/Dapper.
