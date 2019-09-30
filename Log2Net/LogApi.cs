@@ -517,7 +517,7 @@ namespace Log2Net
                 try
                 {
                     System.Web.HttpContext.Current.Server.ClearError();
-                    if (string.IsNullOrEmpty(url))
+                    if (!string.IsNullOrEmpty(url))
                     {
                         System.Web.HttpContext.Current.Response.Redirect(url);
                     }

@@ -1,5 +1,4 @@
-﻿using Log2Net.Util;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 
@@ -189,9 +188,9 @@ namespace Log2Net.Models
     /// </summary>
     public enum SysCategory
     {
-        [StringEnum.EnumDescription("所有系统")]
+        [Description("所有系统")]
         ALL = -1,
-        [StringEnum.EnumDescription("未定义")]
+        [Description("未定义")]
         NoDefined = 0,
 
         [Description("A系列系统的第1个子网站")]

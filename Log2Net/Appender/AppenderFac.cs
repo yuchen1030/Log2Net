@@ -95,6 +95,10 @@ namespace Log2Net.Appender
                 {
                     foreach (var item in obj2)
                     {
+                        if (item.OnlineCnt <= 0 || item.AllVisitors <= 0)
+                        {
+                            continue;
+                        }
                         var res = WriteLog(item);
                         if (res.ErrCode != 0)
                         {
