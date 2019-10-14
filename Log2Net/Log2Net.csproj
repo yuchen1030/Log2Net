@@ -9,9 +9,9 @@
 
   <PropertyGroup>
     
-    <Version>1.0.7</Version>
+    <Version>1.0.8</Version>
     
-    <TargetFrameworks>net45;net451;net452;net46;net461;net462;net47;net471;net472;netcoreapp2.0;netcoreapp2.1</TargetFrameworks>
+    <TargetFrameworks>net45;net451;net452;net46;net461;net462;net47;net471;net472;netcoreapp2.0;netcoreapp2.1;netcoreapp2.2;netcoreapp3.0</TargetFrameworks>
 
     <Description>Log2NET is a tool for collecting log to databases or files for .NET and .NETCore.
 This component automatically collects the system's running logs (server operation, online statistics, etc.), exception logs. programmers can also add custom logs.
@@ -48,7 +48,7 @@ This component supports.NET platform and.NETCore platform, supports file, sql se
 
   </ItemGroup>
 
-  <ItemGroup Condition=" '$(TargetFramework)' == 'netcoreapp2.0' OR '$(TargetFramework)' == 'netcoreapp2.1'">
+  <ItemGroup Condition=" '$(TargetFramework)' == 'netcoreapp2.0' OR '$(TargetFramework)' == 'netcoreapp2.1' OR '$(TargetFramework)' == 'netcoreapp2.2'  OR '$(TargetFramework)' == 'netcoreapp3.0'">
     <PackageReference Include="Microsoft.AspNetCore.HttpOverrides" Version="1.1.4" />
     <PackageReference Include="Microsoft.AspNetCore.Hosting.Abstractions" Version="1.1.3" />
     <PackageReference Include="Microsoft.AspNetCore.Http" Version="1.1.2" />
