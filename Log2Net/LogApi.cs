@@ -369,13 +369,15 @@ namespace Log2Net
         /// <summary>
         /// 写用户登录日志
         /// </summary>
-        public static string WriteLoginLog()
+        public static string WriteLoginLog(string userId, string userName = "")
         {
             var client = ClientServerInfo.ClientInfo.GetClientInfo();
             string userIP = client.IP + "[" + client.Host + "]";
             string loginInfo = "用IP为：" + userIP + ",物理地址为：" + ClientServerInfo.ClientInfo.GetCustomerMac(userIP) + "," + ClientServerInfo.ClientInfo.GetUserAgentInfo() + "的计算机，于" + DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss") + "登录了平台";
             LogTraceEdm model = new LogTraceEdm()
             {
+                UserId = userId,
+                UserName = userName,
                 LogType = LogType.登录,
                 TabOrModu = "登录模块",
                 Detail = loginInfo,

@@ -180,9 +180,9 @@ namespace Log2Net.LogInfo
                 PageSerach<Log_SystemMonitor> baseSerach = new PageSerach<Log_SystemMonitor>()
                 {
                     Filter = a => (int)a.SystemID == sysID && a.ServerIP == serverIP && a.AllVisitors > 0,
-                    OrderBy = a => a.OrderByDescending(m => m.LogTime),
+                    OrderBy = a => a.OrderByDescending(m => m.AllVisitors),//OrderBy = a => a.OrderByDescending(m => m.LogTime), 使用LogTime排序得到的结果不准确
                     PageIndex = 1,
-                    PageSize = 1
+                    PageSize = 5
                 };
                 var dbAccessFac = new Log_SystemMonitorDBAccessFac().DBAccessFactory();
                 var res = dbAccessFac.GetAll(baseSerach);
@@ -191,11 +191,12 @@ namespace Log2Net.LogInfo
                     LogCom.WriteExceptToFile(res.ExBody, res.ErrMsg + "," + res.Module);
                     return 0;
                 }
-                var one = (res.ExeModel as IQueryable<Log_SystemMonitor>).FirstOrDefault();
-                if (one != null)
+                try
                 {
-                    return one.AllVisitors;
+                    var maxNum = (res.ExeModel as IQueryable<Log_SystemMonitor>).Max(a => a.AllVisitors);
+                    return maxNum;
                 }
+                catch { }
                 return 0;
             }
 

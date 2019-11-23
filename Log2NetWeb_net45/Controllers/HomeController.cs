@@ -53,7 +53,7 @@ namespace Log2NetWeb_net45.Controllers
 
             Dictionary<SysCategory, string> dic = LogApi.GetLogWebApplicationsName();
             var userCnt = LogApi.GetNumOfOnLineAllVisit();
-            LogApi.WriteLoginLog();
+            LogApi.WriteLoginLog("CN888");
             return View();
         }
 

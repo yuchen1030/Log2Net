@@ -43,7 +43,7 @@ namespace Log2NetWeb_DNC.Controllers
             ViewData["Message"] = "Your contact page.";
             LogTraceVM logModel = new LogTraceVM() { LogType = LogType.审批, Detail = "人间天堂，最美苏杭", TabOrModu = "联系我们" };
             new ComClass().WriteLog(LogLevel.Info, logModel);
-            var logRes = LogApi.WriteLoginLog();
+            var logRes = LogApi.WriteLoginLog("CN888");
             return View();
         }
 
