@@ -137,6 +137,7 @@ namespace Log2NetWeb_net45
 
         protected void Application_BeginRequest(object sender, EventArgs e)
         {
+            var ttt = Request.UserAgent + Request.UserHostAddress + Request.UserHostName;
             LogApi.WriteFirstVisitLog();//写初次访问日志
         }
 

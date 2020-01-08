@@ -55,7 +55,7 @@ namespace Log2Net.Util.DBUtil.AdoNet.Oracle
 
         protected override string GetColumnsNameSql(string strTbName, string strField = "*")
         {
-            string strSqlTxt = "select  " + strField + " from " + strTbName + " where rownum = 0";
+            string strSqlTxt = "select  " + strField + " from " + strTbName + " where rownum <1 ";
             return strSqlTxt;
         }
 

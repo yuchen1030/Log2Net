@@ -474,7 +474,9 @@ namespace Log2Net
             }
             lock (lockObj)
             {
-                string detail = string.Format("服务器(IIS版本{0})启动后，初次被访问", ClientServerInfo.ServerInfo.GetIISVerson());
+                var client = ClientServerInfo.ClientInfo.GetClientInfo();
+                string userIP = client.IP + "[" + client.Host + "]";
+                string detail = string.Format("服务器(IIS版本{0})启动后，初次被访问，用户为{1}", ClientServerInfo.ServerInfo.GetIISVerson(), userIP);
                 LogTraceEdm first = new LogTraceEdm()
                 {
                     Detail = detail,
